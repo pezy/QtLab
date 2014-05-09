@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Qt4StartUp", "Qt4StartUp\Qt4StartUp.vcxproj", "{12525438-003E-4131-AEB1-2275D7231A43}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CreateDialog", "CreateDialog\CreateDialog.vcxproj", "{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,14 @@ Global
 		{12525438-003E-4131-AEB1-2275D7231A43}.Release|Win32.Build.0 = Release|Win32
 		{12525438-003E-4131-AEB1-2275D7231A43}.Release|x64.ActiveCfg = Release|x64
 		{12525438-003E-4131-AEB1-2275D7231A43}.Release|x64.Build.0 = Release|x64
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Debug|Win32.Build.0 = Debug|Win32
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Debug|x64.ActiveCfg = Debug|x64
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Debug|x64.Build.0 = Debug|x64
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Release|Win32.ActiveCfg = Release|Win32
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Release|Win32.Build.0 = Release|Win32
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Release|x64.ActiveCfg = Release|x64
+		{C91188EA-A5E6-44B3-A300-3EAD166CF2BA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
