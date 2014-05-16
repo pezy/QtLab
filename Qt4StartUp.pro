@@ -9,4 +9,5 @@ SUBDIRS       = \
                 Qt4StartUp \
                 CreateDialog \
                 Spreadsheet \
+                Plotter \
 

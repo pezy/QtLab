@@ -1,5 +1,6 @@
 #include "plotter.h"
 #include <QtGui>
+#include <cmath>
 
 Plotter::Plotter(QWidget *parent)
 	: QWidget(parent)
