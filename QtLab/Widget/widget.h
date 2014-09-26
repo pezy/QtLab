@@ -3,6 +3,15 @@
 
 #include <QWidget>
 
+/*!
+ * \class Widget
+ *
+ * \brief Make clear the different of some public function of QWidget.
+ *
+ * \author PEZY
+ * \date Sept. 2014
+ */
+
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -10,6 +19,9 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = 0);
     ~Widget();
+
+protected:
+	virtual void paintEvent(QPaintEvent *event);
 };
 
 #endif // WIDGET_H
