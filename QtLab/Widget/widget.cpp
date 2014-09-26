@@ -1,5 +1,6 @@
 #include "widget.h"
 #include <QDebug>
+#include <QPainter>
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -13,30 +14,20 @@ Widget::~Widget()
 
 void Widget::paintEvent(QPaintEvent *event)
 {
-	// childrenRect()
-	QRect childrenRect = this->childrenRect();
-	qDebug() << "childrenRect: " << childrenRect.width() << ", " << childrenRect.height();
+	/*!
+	 * Draw the border
+	 */
+	QPainter painter(this);
+	QRect rect = this->geometry();
+	rect.moveTopLeft(QPoint(0, 0));
+	rect.adjust(10, 10, -10, -10);
+	qDebug() << rect.x() << "|" << rect.y() << "|" << rect.bottom() << "," << rect.top() << "," << rect.left() << "," << rect.right();
+	painter.drawRect(rect);
 
-	// contentsRect()
-	QRect contentRect = this->contentsRect();
-	qDebug() << "contentRect: " << contentRect.width() << ", " << contentRect.height();
-
-	// frameGeometry()
-	QRect frameGeom = this->frameGeometry();
-	qDebug() << "frameGeom" << frameGeom.width() << ", " << frameGeom.height();
-
-	// geometry()
-	QRect geom = this->geometry();
-	qDebug() << "Geometry: " << geom.width() << ", " << geom.height();
-
-	// normalGeometry()
-	QRect normalGeom = this->normalGeometry();
-	qDebug() << "normalGeom: " << normalGeom.width() << ", " << normalGeom.height();
-
-	// rect()
-	QRect rect = this->rect();
-	qDebug() << "rect: " << rect.width() << ", " << rect.height();
-
-	// Directly : width() and heigth()
-	qDebug() << "Directly: " << this->width() << ", " << this->height();
+	/*!
+	 * Draw the slip
+	 */
+	painter.setPen(QPen(Qt::red, 2));
+	painter.drawLine(QPoint(rect.left()+5, rect.top()), QPoint(rect.left()+5, rect.bottom()));
+	painter.drawLine(QPoint(rect.right()-5, rect.top()), QPoint(rect.right()-5, rect.bottom()));
 }

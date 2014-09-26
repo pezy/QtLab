@@ -16,3 +16,5 @@ geometry().height() == height();
 - contentRect: 边缘内部的边框, 在geometry的内部.
 - normalGeometry: 这个指的是当前widget在正常情况下(**没有最大化或全屏**)的边框.
 - childrenRect: 获取**子widget**的边框, 如果没有孩子, 长宽皆为0.
+
+see the debug out at [here](https://github.com/pezy/QtLab/blob/907969c2aac80c1d4a71cedaf59ef3c49e879530/QtLab/Widget/widget.cpp#L16-L41)
