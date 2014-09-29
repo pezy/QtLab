@@ -1,20 +1,20 @@
-#¹ØÓÚWidgetµÄÌ½¾¿
+#å…³äºWidgetçš„æ¢ç©¶
 
-##WidgetµÄ¼¸ÖÖ±ß¿ò.
+##Widgetçš„å‡ ç§è¾¹æ¡†.
 
-- frameGeometry: °üº¬ÁËÆä¸¸Ç×(window frame)µÄ±ß¿ò.
-- geometry: ¿ÉÒÔÀí½âÎªµ±Ç°widgetÕæÕıµÄ±ß¿ò.
-- rect: == (0, 0, width(), height()); ×¢ÒâÓëgeometryµÄÇø±ğ, ËüÊÇ´Ó×óÉÏ½Ç¿ªÊ¼µÄ±ß¿ò.
+- frameGeometry: åŒ…å«äº†å…¶çˆ¶äº²(window frame)çš„è¾¹æ¡†.
+- geometry: å¯ä»¥ç†è§£ä¸ºå½“å‰widgetçœŸæ­£çš„è¾¹æ¡†.
+- rect: == (0, 0, width(), height()); æ³¨æ„ä¸geometryçš„åŒºåˆ«, å®ƒæ˜¯ä»å·¦ä¸Šè§’å¼€å§‹çš„è¾¹æ¡†.
 ```cpp
 geometry().width() == width();
 geometry().height() == height();
 ```
-ÆäÊ¾ÒâÍ¼ÈçÏÂÍ¼ËùÊ¾:
+å…¶ç¤ºæ„å›¾å¦‚ä¸‹å›¾æ‰€ç¤º:
 
 ![image](https://cloud.githubusercontent.com/assets/1147451/4418117/01f0ba80-455c-11e4-87f2-13fed4328e77.png)
 
-- contentRect: ±ßÔµÄÚ²¿µÄ±ß¿ò, ÔÚgeometryµÄÄÚ²¿.
-- normalGeometry: Õâ¸öÖ¸µÄÊÇµ±Ç°widgetÔÚÕı³£Çé¿öÏÂ(**Ã»ÓĞ×î´ó»¯»òÈ«ÆÁ**)µÄ±ß¿ò.
-- childrenRect: »ñÈ¡**×Ówidget**µÄ±ß¿ò, Èç¹ûÃ»ÓĞº¢×Ó, ³¤¿í½ÔÎª0.
+- contentRect: è¾¹ç¼˜å†…éƒ¨çš„è¾¹æ¡†, åœ¨geometryçš„å†…éƒ¨.
+- normalGeometry: è¿™ä¸ªæŒ‡çš„æ˜¯å½“å‰widgetåœ¨æ­£å¸¸æƒ…å†µä¸‹(**æ²¡æœ‰æœ€å¤§åŒ–æˆ–å…¨å±**)çš„è¾¹æ¡†.
+- childrenRect: è·å–**å­widget**çš„è¾¹æ¡†, å¦‚æœæ²¡æœ‰å­©å­, é•¿å®½çš†ä¸º0.
 
-see the debug out at [here](https://github.com/pezy/QtLab/blob/907969c2aac80c1d4a71cedaf59ef3c49e879530/QtLab/Widget/widget.cpp#L16-L41)
+see the debug out at [here](../../../907969c2aac80c1d4a71cedaf59ef3c49e879530/QtLab/Widget/widget.cpp#L16-L41)
