@@ -6,6 +6,7 @@
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
+	resize(402, 322);
 }
 
 Widget::~Widget()
@@ -20,26 +21,40 @@ void Widget::paintEvent(QPaintEvent *event)
 	/*!
 	 * Draw the border
 	 */
-	painter.drawRect(0, 0, width()-1, height()-1);	/**< if you don't subtract 1, you can not see the border on bottom and right. */
-	painter.fillRect(0, 0, width()-1, height()-1, Qt::white);
+	QRect rect = this->geometry();
+	rect.moveTopLeft(QPoint(0, 0));
+	rect.adjust(10, 10, -11, -11); /**< set aside for edge. */
+	painter.setPen(Qt::NoPen);
+	painter.setBrush(QBrush(Qt::white));
+	painter.drawRoundRect(rect, 10, 10);
 
 	/*!
-	 * Build the coordinate
+	 * Draw the Title
 	 */
+	painter.setPen(Qt::SolidLine);
+	painter.setFont(QFont("Microsoft YaHei UI", 12)); /**< Use YaHei Font */
+	painter.drawText(QRect(rect.left(), rect.top(), rect.width(), 50), Qt::AlignCenter, "Simple barchart example");
 
-	QFontMetrics metrics = painter.fontMetrics();
-	
-	int leftBearing = metrics.width("100") + 5; /**< 5 is the scale width. */
-	int coordWidth = width() - 2*leftBearing;
-	int coordHeight = height() - 4*metrics.height(); /**< just try */
-
+	/*!
+	 * Set data for test
+	 */
 	QStringList monthList;
 	monthList << "Jan" << "Feb" << "Mar" << "Apr" << "May" << "Jun";
 
 	QStringList valueList;
 	valueList << "0.0" << "3.2" << "6.5" << "9.8" << "13.0";
 
-	painter.translate(leftBearing, coordHeight + 1.75*metrics.height()); /**< move center to left bottom */
+	/*!
+	 * Calculate the Font's pixel. 
+	 */
+	QFontMetrics metrics = painter.fontMetrics();
+	
+	int leftBearing = metrics.width("100.0") + 35; /**< 5 is the scale width. */
+	const int topBearing = 15;
+	int coordWidth	= rect.width() - 2*leftBearing;
+	int coordHeight = rect.height() - topBearing - 4*metrics.height();
+
+	painter.translate(leftBearing, rect.bottom() - 2*metrics.height()); /**< move center to left bottom */
 	float deltaX = static_cast<float>(coordWidth)/monthList.size();
 	float deltaY = static_cast<float>(coordHeight)/(valueList.size()-1);
 
