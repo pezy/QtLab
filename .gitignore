@@ -38,3 +38,7 @@ Makefile*
 
 *.autosave
 .DS_Store
+
+# MacOS
+*.xcodeproj
+*.plist
