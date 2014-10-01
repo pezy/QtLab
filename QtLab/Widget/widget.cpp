@@ -14,7 +14,7 @@ Widget::~Widget()
 
 }
 
-void Widget::paintEvent(QPaintEvent *event)
+void Widget::paintEvent(QPaintEvent *)
 {
 	QPainter painter(this);
 
