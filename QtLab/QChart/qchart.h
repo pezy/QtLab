@@ -2,31 +2,7 @@
 #define QCHART_H
 
 #include <QWidget>
-#include <QSet>
-
-/*!
- * \class QBarSet
- *
- * \brief The value set of the chart.
- *
- * \author pezy
- * \date Oct. 2014
- */
-
-class QBarSet : public QList<int>
-{
-public:
-	QBarSet(const QString &name, const QColor &color):_name(name),_color(color) {}
-	~QBarSet(){}
-	QString name() const { return _name; }
-	QColor color() const { return _color; }
-
-private:
-	QString _name;
-	QColor _color;
-};
-
-typedef QVector<QBarSet*> QBarSeries;
+#include "qdata.h"
 
 /*!
  * \class QChart
@@ -36,6 +12,7 @@ typedef QVector<QBarSet*> QBarSeries;
  * \author PEZY
  * \date Sept. 2014
  */
+class QSelfAdjustingAxis;
 
 class QChart : public QWidget
 {
@@ -51,13 +28,18 @@ public:
 	void setTitle(const QString &title) { _title = title; }
 
 	void addSeries(QBarSeries *series) { _series = series; }
+	void setAxis(QSelfAdjustingAxis *axis) { _axis = axis; }
 
 protected:
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void wheelEvent(QWheelEvent *event);
 
 private:
+	const int titleHeight;
+	const int tipHeight;
+
 	QString _title;
+	QSelfAdjustingAxis *_axis;
 	QBarSeries *_series;
 };
 

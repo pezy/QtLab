@@ -1,11 +1,12 @@
 #include <QApplication>
 #include <QMainWindow>
 #include "qchart.h"
+#include "qselfadjustingaxis.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    
+	QApplication a(argc, argv);
+
 	QBarSet *set0 = new QBarSet("Jane", Qt::darkCyan);
 	QBarSet *set1 = new QBarSet("John", Qt::darkGreen);
 	QBarSet *set2 = new QBarSet("Axel", Qt::darkYellow);
@@ -26,13 +27,18 @@ int main(int argc, char *argv[])
 	series->append(set4);
 
 	QChart *chart = new QChart;
-	chart->setTitle("Simple barchart example");
 	chart->addSeries(series);
-	
+	chart->setTitle("Simple barchart example");
+
+	QStringList categories;
+	categories << "Jan" << "Feb" << "Mar" << "Apr" << "May" << "Jun";
+	QSelfAdjustingAxis *axis = new QSelfAdjustingAxis(series, categories, QFont("Microsoft YaHei UI", 9));
+	chart->setAxis(axis);
+
 	QMainWindow window;
 	window.setCentralWidget(chart);
 	window.resize(420, 300);
 	window.show();
-	
-    return a.exec();
+
+	return a.exec();
 }

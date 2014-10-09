@@ -4,8 +4,10 @@
 #include <QFontMetrics>
 #include <QWheelEvent>
 
+#include "qselfadjustingaxis.h"
+
 QChart::QChart(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), titleHeight(50), tipHeight(50)
 {
 }
 
@@ -17,12 +19,16 @@ void QChart::paintEvent(QPaintEvent *)
 {
 	QPainter painter(this);
 
-	/*!
-	 * Draw the border
-	 */
 	QRect rect = this->geometry();
 	rect.moveTopLeft(QPoint(0, 0));
 	rect.adjust(10, 10, -11, -11); /**< set aside for edge. */
+
+	if (_axis == nullptr) return;
+	else if (!_axis->hasRect()) _axis->setRect(QRect(rect.left(), titleHeight, rect.width(), rect.height() - titleHeight - tipHeight));
+
+	/*!
+	 * Draw the border
+	 */
 	painter.setPen(Qt::NoPen);
 	painter.setBrush(QBrush(Qt::white));
 	painter.drawRoundRect(rect, 10, 10);
@@ -32,78 +38,66 @@ void QChart::paintEvent(QPaintEvent *)
 	 */
 	painter.setPen(Qt::SolidLine);
 	painter.setFont(QFont("Microsoft YaHei UI", 12, QFont::DemiBold)); /**< Use YaHei Font */
-	painter.drawText(QRect(rect.left(), rect.top(), rect.width(), 50), Qt::AlignCenter, title());
-
-	/*!
-	 * Set data for test
-	 */
-	QStringList monthList;
-	monthList << "Jan" << "Feb" << "Mar" << "Apr" << "May" << "Jun";
-
-	QStringList valueList;
-	valueList << "0.0" << "3.2" << "6.5" << "9.8" << "13.0";
-
-	/*!
-	 * Calculate the Font's pixel.
-	 */
-	QFontMetrics metrics = painter.fontMetrics();
-
-	int leftBearing = metrics.width("100.0") + 35; /**< 5 is the scale width. */
-	const int topBearing = 15;
-	int coordWidth	= rect.width() - 1.5*leftBearing;
-	int coordHeight = rect.height() - topBearing - 6*metrics.height();
-	int belowBearing = 4*metrics.height();
-
-	painter.translate(leftBearing, rect.bottom() - belowBearing); /**< move center to left bottom */
-	float deltaX = static_cast<float>(coordWidth)/monthList.size();
-	float deltaY = static_cast<float>(coordHeight)/(valueList.size()-1);
+	painter.drawText(QRect(rect.left(), rect.top(), rect.width(), titleHeight), Qt::AlignCenter, title());
+	painter.translate(_axis->basePoint());
 
 	/*!
 	 * Draw the tips
 	 */
 
 	painter.setFont(QFont("Microsoft YaHei UI", 8));
-	metrics = painter.fontMetrics();
+	QFontMetrics metrics = painter.fontMetrics();
 	int tipsLen = 0;
 	const int sideLen = 5;
 	for (int i = 0; i != _series->size(); ++i)
-		tipsLen += metrics.width(_series->at(i)->name()) + sideLen + 8;
-	int leftTipsBearing = (coordWidth - tipsLen) / 2;
+		tipsLen += metrics.width(_series->at(i)->name()) + sideLen + 2*QSelfAdjustingAxis::scaleLen;
+	int leftTipsBearing = (_axis->width() - tipsLen) / 2;
 
 	for (int i = 0; i != _series->size(); ++i)
 	{
 		int strLen = metrics.width(_series->at(i)->name());
 		painter.setBrush(_series->at(i)->color());
 		// box
-		painter.drawRect(leftTipsBearing, belowBearing/2, sideLen, sideLen);
-		leftTipsBearing += sideLen + 4;
+		painter.drawRect(leftTipsBearing, tipHeight, sideLen, sideLen);
+		leftTipsBearing += sideLen + QSelfAdjustingAxis::scaleLen;
 		// text
-		painter.drawText(leftTipsBearing, belowBearing/2 + sideLen + 1, _series->at(i)->name());
-		leftTipsBearing += strLen + 4;
+		painter.drawText(leftTipsBearing, tipHeight + sideLen + 1, _series->at(i)->name());
+		leftTipsBearing += strLen + QSelfAdjustingAxis::scaleLen;
 	}
-	
 
 	/*!
 	 * Draw the coordinate and histogram
 	 */
 	painter.setFont(QFont("Microsoft YaHei UI", 9));
-	metrics = painter.fontMetrics();
-	painter.drawLine(0, 0, coordWidth, 0);
-	for (int i = 0; i != monthList.size(); ++i)
+	int histogramSize = _series->size()*sideLen;
+	float histogramEdge = (_axis->deltaX() - histogramSize)/2;
+	qDebug() << histogramEdge;
+
+	painter.drawLine(0, 0, _axis->width(), 0);
+	for (int i = 0; i != _axis->categories().size(); ++i)
 	{
-		int strLen = metrics.width(monthList.at(i));
+		for (int j = 0; j != _series->size(); ++j)
+		{
+			painter.setBrush(_series->at(j)->color());
+			painter.setPen(Qt::NoPen);
+			float tips = _axis->valueToTick(_series->at(j)->at(i));
+			painter.drawRect(_axis->deltaX()*i + histogramEdge + 5*j, -1*tips, 4, tips);
+		}
+		painter.setPen(Qt::SolidLine);
+
+		int strLen = _axis->fontMetrics().width(_axis->categories().at(i));
 		// scale
-		painter.drawLine(deltaX*(i+1), 0, deltaX*(i+1), 4);
+		painter.drawLine(_axis->deltaX()*(i+1), 0, _axis->deltaX()*(i+1), QSelfAdjustingAxis::scaleLen);
 		// text
-		painter.drawText(deltaX*i + (deltaX-strLen)/2 ,metrics.height(), monthList.at(i));
+		painter.drawText(_axis->deltaX()*i + (_axis->deltaX()-strLen)/2 , metrics.height(), _axis->categories().at(i));
 	}
 
-	painter.drawLine(0, 0, 0, -coordHeight);
-	for (int i = 0; i != valueList.size(); ++i)
+	painter.drawLine(0, 0, 0, -_axis->height());
+	for (int i = 0; i != _axis->values().size(); ++i)
 	{
-		int deviation = metrics.height()/2 - metrics.descent();
-		painter.drawLine(-4, -deltaY*i, 0, -deltaY*i);
-		painter.drawText(-metrics.width(valueList.at(i))-4, -deltaY*i+deviation, valueList.at(i));
+		int deviation = _axis->fontMetrics().height()/2 - _axis->fontMetrics().descent();
+		painter.drawLine(-QSelfAdjustingAxis::scaleLen, -_axis->deltaY()*i, 0, -_axis->deltaY()*i);
+		painter.drawText(-_axis->fontMetrics().width(_axis->values().at(i))-QSelfAdjustingAxis::scaleLen, -_axis->deltaY()*i+deviation, _axis->values().at(i));
 	}
 }
 
