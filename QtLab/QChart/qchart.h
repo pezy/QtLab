@@ -13,7 +13,7 @@
  * \date Oct. 2014
  */
 
-class QBarSet : public QSet<int>
+class QBarSet : public QList<int>
 {
 public:
 	QBarSet(const QString &name, const QColor &color):_name(name),_color(color) {}
