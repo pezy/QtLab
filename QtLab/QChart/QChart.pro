@@ -8,11 +8,14 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Widget
+TARGET = QChart
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        widget.cpp
+        qchart.cpp\
+        qselfadjustingaxis.cpp
 
-HEADERS  += widget.h
+HEADERS  += qchart.h\
+        qdata.h\
+        qselfadjustingaxis.h
