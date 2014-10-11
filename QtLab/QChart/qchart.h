@@ -33,6 +33,7 @@ public:
 protected:
 	virtual void paintEvent(QPaintEvent *event);
 	virtual void wheelEvent(QWheelEvent *event);
+	virtual void resizeEvent(QResizeEvent *event);
 
 private:
 	const int titleHeight;

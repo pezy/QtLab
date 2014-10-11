@@ -118,3 +118,13 @@ void QChart::wheelEvent(QWheelEvent *event)
 
 	event->accept();
 }
+
+void QChart::resizeEvent(QResizeEvent *)
+{
+	QRect rect = this->geometry();
+	rect.moveTopLeft(QPoint(0, 0));
+	rect.adjust(10, 10, -11, -11); /**< set aside for edge. */
+
+	if (_axis == nullptr) return;
+	else _axis->setRect(QRect(rect.left(), rect.top()+titleHeight, rect.width(), rect.height() - titleHeight - tipHeight));
+}
