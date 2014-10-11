@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 
     delete series;
     delete chart;
+    delete axis;
 
     return ret;
 }
