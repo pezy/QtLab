@@ -40,5 +40,16 @@ int main(int argc, char *argv[])
 	window.resize(420, 300);
 	window.show();
 
-	return a.exec();
+    auto ret = a.exec();
+
+    delete set0;
+    delete set1;
+    delete set2;
+    delete set3;
+    delete set4;
+
+    delete series;
+    delete chart;
+
+    return ret;
 }
