@@ -1,0 +1,1 @@
+- 2014-10-11: 0.0.1: [QChart]Drawing the **histogram** basically.
