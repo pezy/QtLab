@@ -2,20 +2,29 @@
 #include <QWidget>
 #include <QPainter>
 #include <QDebug>
+#include <QMouseEvent>
 
 class Widget : public QWidget
 {
 public:
     Widget()
     {
-        startTimer(500);
+		setMouseTracking(true);
     }
 
-    void timerEvent(QTimerEvent *)
+	virtual void paintEvent(QPaintEvent *)
+	{
+		QPainter painter(this);
+		painter.setPen(QPen(QBrush(Qt::red), 3));
+		painter.drawLine(QPoint(rect().left()+100, rect().top()), QPoint(rect().left()+100, rect().bottom()));
+	}
+
+    virtual void mouseMoveEvent(QMouseEvent *event)
     {
-        // Here values are different
-        qDebug() << "geometry:(" << geometry().left() << "," << geometry().right() << ")";
-		qDebug() << "rect:(" << rect().left() << "," << rect().right() << ")";
+        if (event->pos().x() >= rect().left()+99 && event->pos().x() <= rect().left()+101)
+			setCursor(Qt::SizeHorCursor);
+		else
+			setCursor(QCursor());
     }
 };
 
