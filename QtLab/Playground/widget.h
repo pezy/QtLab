@@ -7,13 +7,14 @@
 #include <QMouseEvent>
 #include <QMenu>
 #include <QObject>
+#include <QColorDialog>
 
 class Widget : public QWidget
 {
     Q_OBJECT
 
 public:
-    Widget():m_pos(-1),m_dragging(false),m_deleted(false)
+    Widget():m_pos(-1),m_dragging(false),m_deleted(false),m_color(Qt::red)
     {
     setMouseTracking(true);
         m_meun = new QMenu;
@@ -22,12 +23,13 @@ public:
         m_meun->addAction(changeColorAction);
         m_meun->addAction(delAction);
         connect(delAction, SIGNAL(triggered()), this, SLOT(slotDel()));
+		connect(changeColorAction, SIGNAL(triggered()), this, SLOT(slotColorChanged()));
     }
 
     virtual void paintEvent(QPaintEvent *)
     {
         QPainter painter(this);
-        painter.setPen(QPen(QBrush(Qt::red), 3));
+        painter.setPen(QPen(QBrush(m_color), 3));
         if (m_pos == -1) m_pos = rect().left() + 100;
         if (!m_deleted)
             painter.drawLine(QPoint(m_pos, rect().top()), QPoint(m_pos, rect().bottom()));
@@ -65,14 +67,34 @@ public:
         m_meun->exec(cursor().pos());
     }
 
+	virtual void mouseDoubleClickEvent(QMouseEvent *event)
+	{
+		if (rect().contains(event->pos()) && m_deleted)
+		{
+			m_pos = event->pos().x();
+			m_deleted = false;
+			update();
+		}
+	}
+
 private slots:
     void slotDel() { m_deleted = true; update(); }
+	void slotColorChanged()
+	{
+		QColor color = QColorDialog::getColor(m_color, this, "Select Color", QColorDialog::DontUseNativeDialog);
+		if (color.isValid())
+		{
+			m_color = color;
+			update();
+		}
+	}
 
 private:
     int m_pos;
     bool m_dragging;
     bool m_deleted;
     QMenu *m_meun;
+	QColor m_color;
 };
 
 #endif
