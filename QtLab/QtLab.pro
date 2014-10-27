@@ -3,4 +3,5 @@ TEMPLATE = subdirs
 SUBDIRS += \
     QChart \
     Playground \
-    TableView
+    TableView \
+    Style
