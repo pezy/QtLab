@@ -4,4 +4,5 @@ SUBDIRS += \
     QChart \
     Playground \
     TableView \
-    Style
+    Style \
+    Spinbox
