@@ -5,4 +5,5 @@ SUBDIRS += \
     Playground \
     TableView \
     Style \
-    Spinbox
+    Spinbox \
+    thread
