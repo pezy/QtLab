@@ -6,4 +6,5 @@ SUBDIRS += \
     TableView \
     Style \
     Spinbox \
-    thread
+    thread \
+    FileEdit
