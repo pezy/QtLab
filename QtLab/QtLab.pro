@@ -7,4 +7,5 @@ SUBDIRS += \
     Style \
     Spinbox \
     thread \
-    FileEdit
+    FileEdit \
+    TabWidget

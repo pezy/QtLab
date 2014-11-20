@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="inform">inform.png</file>
+        <file alias="current_inform">inform_cur.bmp</file>
+        <file alias="switch">switch.bmp</file>
+        <file alias="current_switch">switch_cur.png</file>
+    </qresource>
+</RCC>
