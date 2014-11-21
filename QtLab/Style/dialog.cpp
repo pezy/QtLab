@@ -1,4 +1,4 @@
-
+#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDateTimeEdit>
@@ -14,6 +14,8 @@
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QTextEdit>
+#include <QStyleFactory>
+#include <QHBoxLayout>
 #include "dialog.h"
 
 Dialog::Dialog(QWidget *parent)

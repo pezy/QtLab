@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     QChart \
-    Playground \
+    ColorSlider \
     TableView \
     Style \
     Spinbox \
