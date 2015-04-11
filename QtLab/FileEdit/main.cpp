@@ -4,6 +4,7 @@
 #include <QDropEvent>
 #include <QUrl>
 #include <QFileInfo>
+#include <QMimeData>
 
 class FileEdit : public QLineEdit {
 public:

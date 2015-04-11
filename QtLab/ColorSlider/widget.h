@@ -11,6 +11,7 @@
 #include <QLinearGradient>
 #include <QPropertyAnimation>
 #include <QEasingCurve>
+#include <QVariant>
 
 class Widget : public QWidget
 {
@@ -117,9 +118,9 @@ private:
 		const qreal granularite = 100.0;
 		interpolator.setEasingCurve(QEasingCurve::Linear);
 		interpolator.setDuration(granularite);
-		interpolator.setKeyValueAt(0, Qt::blue);
-		interpolator.setKeyValueAt(0.5, Qt::green);
-		interpolator.setKeyValueAt(1, Qt::red);
+        interpolator.setKeyValueAt(0, QColor(Qt::blue));
+        interpolator.setKeyValueAt(0.5, QColor(Qt::green));
+        interpolator.setKeyValueAt(1, QColor(Qt::red));
 		interpolator.setCurrentTime(pos * granularite);
 		return interpolator.currentValue().value<QColor>();
 	}

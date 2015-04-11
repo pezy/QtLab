@@ -8,4 +8,5 @@ SUBDIRS += \
     Spinbox \
     thread \
     FileEdit \
-    TabWidget
+    TabWidget \
+    XML
