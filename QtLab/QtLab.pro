@@ -9,4 +9,5 @@ SUBDIRS += \
     thread \
     FileEdit \
     TabWidget \
-    XML
+    XML \
+    DrawText
