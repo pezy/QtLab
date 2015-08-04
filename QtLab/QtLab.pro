@@ -6,8 +6,6 @@ SUBDIRS += \
     TableView \
     Style \
     Spinbox \
-    thread \
     FileEdit \
     TabWidget \
-    XML \
-    DrawText
+    XML
