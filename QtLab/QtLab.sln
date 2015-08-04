@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpinBox", "Spinbox\SpinBox.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FileEdit", "FileEdit\FileEdit.vcxproj", "{87BAF005-74DF-4F20-B8BE-7F5F157FCFE5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DrawText", "DrawText\DrawText.vcxproj", "{5D74B9DE-18ED-4C35-A618-482EF05DE165}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -91,6 +93,14 @@ Global
 		{87BAF005-74DF-4F20-B8BE-7F5F157FCFE5}.Release|Win32.Build.0 = Release|Win32
 		{87BAF005-74DF-4F20-B8BE-7F5F157FCFE5}.Release|x64.ActiveCfg = Release|x64
 		{87BAF005-74DF-4F20-B8BE-7F5F157FCFE5}.Release|x64.Build.0 = Release|x64
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Debug|Win32.Build.0 = Debug|Win32
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Debug|x64.ActiveCfg = Debug|x64
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Debug|x64.Build.0 = Debug|x64
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Release|Win32.ActiveCfg = Release|Win32
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Release|Win32.Build.0 = Release|Win32
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Release|x64.ActiveCfg = Release|x64
+		{5D74B9DE-18ED-4C35-A618-482EF05DE165}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
