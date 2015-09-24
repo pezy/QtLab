@@ -19,10 +19,65 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{f605b999-2996-4213-bafe-556003d22107}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{80e5b325-85b3-4db1-b548-bd9f9bdf7c13}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kesliderex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="qmainwidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qmainwidget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qmainwidget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="qspinboxex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_qspinboxex.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_qspinboxex.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="kesliderex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_qmainwidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="qmainwidget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qmainwidget.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="qspinboxex.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
