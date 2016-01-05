@@ -1,0 +1,17 @@
+!colormap file, it include color info and value info.
+<BaseInfo>
+    NullColor = 0, 0, 0, 0
+</BaseInfo>
+<ColorMap>
+    Color = 255, 255, 0, 0
+    Color = 255, 235, 68, 68
+    Color = 255, 223, 130, 130
+    Color = 255, 223, 181, 181
+    Color = 255, 235, 223, 223
+    Color = 255, 255, 255, 255
+    Color = 255, 225, 225, 235
+    Color = 255, 184, 184, 225
+    Color = 255, 133, 133, 225
+    Color = 255, 70, 70, 235
+    Color = 255, 0, 0, 255
+</ColorMap>

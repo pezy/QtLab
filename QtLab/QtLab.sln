@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Axis", "Axis\Axis.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReverseSliderAndSpinBox", "ReverseSliderAndSpinBox\ReverseSliderAndSpinBox.vcxproj", "{B74E6B4D-CC47-4EE2-80AD-76DEC03B882F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorBar", "ColorBar\ColorBar.vcxproj", "{0E8BD021-6448-4D0F-B780-895363052836}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -141,6 +143,14 @@ Global
 		{B74E6B4D-CC47-4EE2-80AD-76DEC03B882F}.Release|Win32.Build.0 = Release|Win32
 		{B74E6B4D-CC47-4EE2-80AD-76DEC03B882F}.Release|x64.ActiveCfg = Release|x64
 		{B74E6B4D-CC47-4EE2-80AD-76DEC03B882F}.Release|x64.Build.0 = Release|x64
+		{0E8BD021-6448-4D0F-B780-895363052836}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0E8BD021-6448-4D0F-B780-895363052836}.Debug|Win32.Build.0 = Debug|Win32
+		{0E8BD021-6448-4D0F-B780-895363052836}.Debug|x64.ActiveCfg = Debug|x64
+		{0E8BD021-6448-4D0F-B780-895363052836}.Debug|x64.Build.0 = Debug|x64
+		{0E8BD021-6448-4D0F-B780-895363052836}.Release|Win32.ActiveCfg = Release|Win32
+		{0E8BD021-6448-4D0F-B780-895363052836}.Release|Win32.Build.0 = Release|Win32
+		{0E8BD021-6448-4D0F-B780-895363052836}.Release|x64.ActiveCfg = Release|x64
+		{0E8BD021-6448-4D0F-B780-895363052836}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

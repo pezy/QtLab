@@ -1,0 +1,38 @@
+!colormap file, it include color info and value info.
+<BaseInfo>
+    NullColor = 0, 0, 0, 0
+</BaseInfo>
+<ColorMap>
+    Color = 255, 140, 140, 140
+    Color = 255, 0, 64, 255
+    Color = 255, 0, 96, 255
+    Color = 255, 0, 126, 255
+    Color = 255, 0, 159, 255
+    Color = 255, 0, 190, 255
+    Color = 255, 0, 223, 255
+    Color = 255, 0, 255, 255
+    Color = 255, 0, 255, 255
+    Color = 255, 32, 255, 223
+    Color = 255, 64, 255, 190
+    Color = 255, 96, 255, 159
+    Color = 255, 126, 255, 126
+    Color = 255, 159, 255, 96
+    Color = 255, 223, 255, 64
+    Color = 255, 255, 255, 32
+    Color = 255, 255, 255, 0
+    Color = 255, 255, 223, 0
+    Color = 255, 255, 190, 0
+    Color = 255, 255, 159, 0
+    Color = 255, 255, 126, 0
+    Color = 255, 255, 96, 0
+    Color = 255, 255, 64, 0
+    Color = 255, 255, 32, 0
+    Color = 255, 255, 0, 0
+    Color = 255, 255, 0, 64
+    Color = 255, 255, 0, 96
+    Color = 255, 255, 0, 126
+    Color = 255, 255, 0, 159
+    Color = 255, 255, 0, 190
+    Color = 255, 255, 0, 223
+    Color = 255, 255, 0, 255
+</ColorMap>

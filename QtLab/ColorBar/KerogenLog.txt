@@ -1,0 +1,1 @@
+?? ?? 5 09:38:21 2016: Can not find the colormap directory at E:/github/qt/QtLab/ColorBarColormap!
