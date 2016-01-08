@@ -1,10 +1,10 @@
-#include "colorbar.h"
 #include <QtWidgets/QApplication>
+#include "kecolormapbar.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    ColorBar w;
+    CKEColormapBar w;
     w.show();
     return a.exec();
 }

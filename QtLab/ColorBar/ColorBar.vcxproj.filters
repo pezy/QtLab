@@ -38,18 +38,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="colorbar.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_colorbar.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_colorbar.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\qrc_colorbar.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="kecolormapbar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,40 +53,28 @@
     <ClCompile Include="kelog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kecolormapbarscene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_kecolormapbarscene.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_kecolormapbarscene.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="kecolorcontrolpoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="kecolormapbarview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_kecolormapbarview.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_kecolormapbarview.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="colorbar.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="colorbar.ui">
-      <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="colorbar.qrc">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="kecolormapbar.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="kecolormapbarscene.h">
+    <CustomBuild Include="kecolormapbarview.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_colorbar.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
     <ClInclude Include="kecolormap.h">
       <Filter>Header Files</Filter>
     </ClInclude>

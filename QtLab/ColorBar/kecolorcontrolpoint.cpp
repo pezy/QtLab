@@ -1,10 +1,14 @@
 #include "kecolorcontrolpoint.h"
 #include <QPainter>
+#include <QGraphicsScene>
+#include "kecolormapbar.h"
+#include "kecolormap.h"
 
-CKEColorControlPoint::CKEColorControlPoint(EPositionType posType)
+CKEColorControlPoint::CKEColorControlPoint(EPositionType posType, int index, CKEColormap* pColormap)
     : QGraphicsItem()
     , m_posType(posType)
-    , m_color(Qt::white)
+    , m_index(index)
+    , m_pColormap(pColormap)
 {
 
 }
@@ -23,7 +27,7 @@ QRectF CKEColorControlPoint::boundingRect() const
 void CKEColorControlPoint::paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget)
 {
     painter->setPen(Qt::black);
-    painter->setBrush(m_color);
+    painter->setBrush(m_pColormap->GetColorAt(m_index));
 
     QPolygonF triangle;
 

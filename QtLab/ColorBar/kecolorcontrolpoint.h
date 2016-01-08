@@ -3,22 +3,29 @@
 
 #include <QGraphicsItem>
 
+class CKEColormap;
+
 class CKEColorControlPoint : public QGraphicsItem
 {
 public:
     enum EPositionType{eTop, eBottom};
 
-    CKEColorControlPoint(EPositionType posType);
+    CKEColorControlPoint(EPositionType posType, int index, CKEColormap* pColormap);
     ~CKEColorControlPoint();
 
     virtual QRectF boundingRect() const;
     virtual void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget = 0);
 
-    void SetColor(const QColor& color) { m_color = color; }
+    int GetIndex() const { return m_index; }
+    void SetIndex(int index) { m_index = index; }
+
+    EPositionType GetType() const { return m_posType; }
+    void SetType(EPositionType type) { m_posType = type; }
 
 private:
     EPositionType m_posType;
-    QColor m_color;
+    int m_index;
+    CKEColormap* m_pColormap;
 };
 
 #endif // KECOLORCONTROLPOINT_H

@@ -1,7 +1,8 @@
 #ifndef KECOLORMAPBAR_H
 #define KECOLORMAPBAR_H
 
-#include <QFrame>
+#include <QWidget>
+#include <QGraphicsScene>
 
 /*!
  *  @class  CKEColormapBar in kecolormapbar.h
@@ -9,6 +10,10 @@
  *  @author pezy
  *  @date   2016-01-04
  */
+
+class CKEColormap;
+class CKEColormapBarView;
+class CKEColorControlPoint;
 
 class CKEColormapBar : public QWidget
 {
@@ -18,8 +23,22 @@ public:
     explicit CKEColormapBar(QWidget *parent = 0);
     ~CKEColormapBar();
 
-private:
+    CKEColormap* GetColormap() const { return m_colormap; }
+
+protected:
+    virtual void resizeEvent(QResizeEvent *event);
     
+private:
+    void _Init();
+    void _InitData();
+
+    QPointF GetPosByItem(const CKEColorControlPoint& item) const;
+
+private:
+    CKEColormap* m_colormap = nullptr;
+    CKEColormapBarView *m_pView = nullptr;
+
+    QGraphicsScene m_pScene;
 };
 
 #endif // KECOLORMAPBAR_H
