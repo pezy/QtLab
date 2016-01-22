@@ -1,11 +1,11 @@
 #include "kecolormapbar.h"
 
 #include <QGraphicsView>
+#include <QGraphicsScene>
 #include <QResizeEvent>
 
 #include "kecolormap.h"
-#include "kecolormapbarview.h"
-#include "kecolorcontrolpoint.h"
+#include "kecolortagitem.h"
 
 CKEColormapBar::CKEColormapBar(QWidget *parent)
     : QWidget(parent)
@@ -28,34 +28,16 @@ void CKEColormapBar::resizeEvent(QResizeEvent *event)
 
 void CKEColormapBar::_Init()
 {
-    m_pView = new CKEColormapBarView(&m_pScene, this);
-    CKEColorControlPoint pointMin(CKEColorControlPoint::EPositionType::eBottom, 0, m_colormap);
-    CKEColorControlPoint pointMax(CKEColorControlPoint::EPositionType::eBottom, 255, m_colormap);
+    m_pScene = new QGraphicsScene;
+    m_pView = new QGraphicsView(m_pScene, this);
+    m_pView->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
-    m_pScene.addItem(&pointMin);
-    m_pScene.addItem(&pointMax);
-
-    QPointF posMin = GetPosByItem(pointMin);
-    QPointF posMax = GetPosByItem(pointMax);
-
-    pointMin.setPos(0, 100);
-    pointMax.setPos(posMax);
+    CKEColorTagItem *pItem = new CKEColorTagItem(0, CKEColorTagItem::SingleColor, Qt::red);
+    m_pScene->addItem(pItem);
 }
 
 void CKEColormapBar::_InitData()
 {
     CKEColormap::InitializeColormaps();
     m_colormap = CKEColormap::GetColormap("rainbow");
-}
-
-QPointF CKEColormapBar::GetPosByItem(const CKEColorControlPoint& item) const
-{
-    if (item.GetType() == CKEColorControlPoint::EPositionType::eBottom)
-    {
-        return QPointF(5.f + item.GetIndex(), 40);
-    }
-    else
-    {
-        return QPointF(5.f + item.GetIndex(), 10);
-    }
 }
