@@ -1,25 +1,31 @@
-#ifndef _CKECOLORMAP_H__
-#define _CKECOLORMAP_H__
+#ifndef CKECOLORMAP_H
+#define CKECOLORMAP_H
 
 #include <qstringlist.h>
 #include <qcolor.h>
 
-///@brief	Used to represent a 256 cells colormap.
-///@author	Xiong Xiong
-///@date	Sep, 2013
-///@see		
+/*!
+* @class	CKEColormap provided in the file "kecolormap.h"
+* @brief	Used to represent a 256 cells colormap.
+* @author	pezy
+* @date		2016-01-26
+* @see		
+*/
+
 class CKEColormap
 {
 public:
-	static bool InitializeColormaps();
-
+	static bool InitializeColormapsFromFile();
+    static bool InitializeColormapsFromDB();
+    
 	static QStringList GetAllColormapsName();
-
+    
 	static CKEColormap* GetColormap(const QString& sName);
-
 	static CKEColormap* GetColormap(unsigned int iIDX);
 
+public:
 	QColor GetColorAt(unsigned char iIDX);
+    void SetColorAt(unsigned char iIDX, const QColor& color);
 
 	void SaveColormap(QString name, QList<QColor> &vecColor);
 
@@ -29,8 +35,11 @@ public:
 	}
 
 private:
+    //! @obsolete 2015-01-26. use db to save colormap.
 	CKEColormap(const QString& sFile);
+    //! @constructor
     CKEColormap(const QString& sName, const QColor (&arrColor)[256]);
+    CKEColormap(const QString& sName, const QRgb(&arrRgbs)[256]);
 
 	QString		m_strName;
 	unsigned char	m_iRed[256];
@@ -41,4 +50,4 @@ private:
 	static QList<CKEColormap>	m_staListColormap;
 };
 
-#endif
+#endif // CKECOLORMAP_H

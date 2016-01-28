@@ -53,24 +53,12 @@
     <ClCompile Include="kelog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kecolortagitem.cpp">
+    <ClCompile Include="kedbio.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kecolormapscene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_kecolormapscene.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_kecolormapscene.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="kecolormapbar.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="kecolormapscene.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -81,7 +69,10 @@
     <ClInclude Include="kelog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="kecolortagitem.h">
+    <ClInclude Include="kedbio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kesaveload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

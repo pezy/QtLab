@@ -1,13 +1,44 @@
 #include "kecolormap.h"
 #include <qdir.h>
 #include <qrgb.h>
-#include "kelog.h"
-#include <cassert>
 #include <vector>
+#include <QtSql>
+#include <QDebug>
+
+#include "kelog.h"
+#include "kedbio.h"
+#include "kesaveload.h"
 
 QList<CKEColormap> CKEColormap::m_staListColormap;
 
-bool CKEColormap::InitializeColormaps()
+bool CKEColormap::InitializeColormapsFromDB()
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(CKEDBIO::GetDefaultDBFileName());
+
+    if (!db.open())
+    {
+        CKELog::AddLog("Open DB error: " + CKEDBIO::GetDefaultDBFileName());
+        qDebug() << db.lastError();
+        return false;
+    }
+
+    QRgb rgbs[256];
+
+    QSqlQueryModel model;
+    model.setQuery("Select * from Colormap");
+    for (int i = 0; i < model.rowCount(); ++i)
+    {
+        QString colormapName = model.record(i).value("ID").toString();
+        LoadDataFromBLOB(model.record(i).value("ColormapData"), rgbs, 256);
+        CKEColormap colormap(colormapName, rgbs);
+        m_staListColormap << colormap;
+    }
+
+    return true;
+}
+
+bool CKEColormap::InitializeColormapsFromFile()
 {
     QString strColormapDir = QDir::currentPath() + QDir::separator() + "Colormap" + QDir::separator();
 	QDir qDir(strColormapDir);
@@ -60,7 +91,7 @@ CKEColormap::CKEColormap(const QString& strFile)
 	QFile qFile(strFile);
 	if (!qFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
-		assert(false);
+		Q_ASSERT(false);
 	}
 	
 	// read head
@@ -136,6 +167,17 @@ CKEColormap::CKEColormap(const QString& sName, const QColor(&arrColor)[256]) : m
     }
 }
 
+CKEColormap::CKEColormap(const QString& sName, const QRgb(&arrRgbs)[256]) : m_strName(sName)
+{
+    for (int i = 0; i < 256; ++i)
+    {
+        m_iRed[i] = qRed(arrRgbs[i]);
+        m_iGreen[i] = qGreen(arrRgbs[i]);
+        m_iBlue[i] = qBlue(arrRgbs[i]);
+        m_iAlpha[i] = qAlpha(arrRgbs[i]);
+    }
+}
+
 CKEColormap* CKEColormap::GetColormap(const QString& strName)
 {
 	for(int i = 0; i< m_staListColormap.size(); i++)
@@ -158,6 +200,14 @@ CKEColormap* CKEColormap::GetColormap(unsigned int iIDX)
 QColor CKEColormap::GetColorAt(unsigned char iIDX)
 {
 	return QColor(m_iRed[iIDX], m_iGreen[iIDX], m_iBlue[iIDX], m_iAlpha[iIDX]);
+}
+
+void CKEColormap::SetColorAt(unsigned char iIDX, const QColor& color)
+{
+    m_iRed[iIDX] = qRed(color.rgba());
+    m_iGreen[iIDX] = qGreen(color.rgba());
+    m_iBlue[iIDX] = qBlue(color.rgba());
+    m_iAlpha[iIDX] = qAlpha(color.rgba());
 }
 
 void CKEColormap::SaveColormap(QString name, QList<QColor> &vecColor)

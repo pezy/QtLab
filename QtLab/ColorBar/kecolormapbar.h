@@ -2,6 +2,7 @@
 #define KECOLORMAPBAR_H
 
 #include <QWidget>
+#include <QMap>
 
 /*!
  *  @class  CKEColormapBar in kecolormapbar.h
@@ -11,8 +12,6 @@
  */
 
 class CKEColormap;
-class QGraphicsScene;
-class QGraphicsView;
 
 class CKEColormapBar : public QWidget
 {
@@ -25,17 +24,41 @@ public:
     CKEColormap* GetColormap() const { return m_colormap; }
 
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
-    
+    void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    QSize sizeHint() const override;
+    void mousePressEvent(QMouseEvent* event) override;
+
 private:
     void _Init();
     void _InitData();
+    void _DrawControlPoint(int index);
+    void _DrawInterpolationIndex(int index);
+    QPointF _ColorIndexToControlPos(int index);
+    QPointF _ColorIndexToInterpolationPos(int index);
+    int _PosToColorIndex(const QPointF& pos);
+    int _ControlPointIndexAtPos(QPointF pos);
+
+    void _ChangeSingleColor(const QPointF& position);
+    void _ColorInterpolation();
 
 private:
     CKEColormap* m_colormap = nullptr;
 
-    QGraphicsScene* m_pScene;
-    QGraphicsView*  m_pView;
+    const int m_nColor = 256;
+    const qreal m_marginHorizon = 5.0;
+    const qreal m_marginVerticle = 15.0;
+
+    qreal m_singleColorBarWidth = 0.0;
+    QRectF m_colorBarRect;
+    QRectF m_upperBarRect;
+    QRectF m_lowerBarRect;
+
+    QMap<int, QRectF> m_mapCPRect; // Control points bounding rect.
+    int m_highlightIndex = -1;
+
+    int m_interpolationIndex = -1;
+    QRectF m_rectInterpolation;
 };
 
 #endif // KECOLORMAPBAR_H

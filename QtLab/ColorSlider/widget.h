@@ -20,7 +20,7 @@ class Widget : public QWidget
 public:
     Widget():m_pos(-1),m_dragging(false),m_deleted(false),m_color(Qt::white)
     {
-    setMouseTracking(true);
+        setMouseTracking(true);
         m_meun = new QMenu;
         QAction *changeColorAction = new QAction(tr("change color"), this);
         QAction *delAction = new QAction(tr("delete"), this);
