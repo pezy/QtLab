@@ -3,13 +3,14 @@
 #include "kecolormap.h"
 #include "kedbio.h"
 #include "kesaveload.h"
+#include "dialog.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    CKEColormapBar bar;
-    bar.show();
+    Dialog dialog;
+    dialog.show();
 
     /*CKEDBIO *pDBIO = new CKEDBIO;
     QString strDBFile = CKEDBIO::GetDefaultDBFileName();

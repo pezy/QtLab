@@ -2,7 +2,6 @@
 #define KECOLORMAPBAR_H
 
 #include <QWidget>
-#include <QMap>
 
 /*!
  *  @class  CKEColormapBar in kecolormapbar.h
@@ -21,29 +20,46 @@ public:
     explicit CKEColormapBar(QWidget *parent = 0);
     ~CKEColormapBar();
 
-    CKEColormap* GetColormap() const { return m_colormap; }
+    CKEColormap* GetColormap() { return m_pColormap; }
+
+public slots:
+    void slotReset();
+    void slotFlip();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     QSize sizeHint() const override;
     void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 
 private:
-    void _Init();
     void _InitData();
     void _DrawControlPoint(int index);
-    void _DrawInterpolationIndex(int index);
+    void _DrawControlRange(int beg, int end);
+    void _DrawInterpolationMiddlePoint(int index);
+
     QPointF _ColorIndexToControlPos(int index);
     QPointF _ColorIndexToInterpolationPos(int index);
     int _PosToColorIndex(const QPointF& pos);
-    int _ControlPointIndexAtPos(QPointF pos);
 
-    void _ChangeSingleColor(const QPointF& position);
-    void _ColorInterpolation();
+    void _SetSingleColor(const QPointF& position);
+    void _SelectControlPoint(const QPointF& position);
+    void _SetControlPoint(const QPointF& position);
+    void _SetMiddlePoint(const QPointF& position);
+
+    void _CalcLinearInterpolation(int beg, int end);
+    QColor _CalcMiddleColor(int beg, int end);
+
+    void _ResetControlPointsList();
+
+    void _CalcCompressionToRight(int oldIndex, int newIndex);
+    void _CalcCompressionToLeft(int oldIndex, int newIndex);
 
 private:
-    CKEColormap* m_colormap = nullptr;
+    CKEColormap* m_pColormap = nullptr;
 
     const int m_nColor = 256;
     const qreal m_marginHorizon = 5.0;
@@ -54,11 +70,12 @@ private:
     QRectF m_upperBarRect;
     QRectF m_lowerBarRect;
 
-    QMap<int, QRectF> m_mapCPRect; // Control points bounding rect.
-    int m_highlightIndex = -1;
+    QList<int> m_listControlPoints;
+    QPair<int, int> m_interpolationRange;
 
-    int m_interpolationIndex = -1;
-    QRectF m_rectInterpolation;
+    int m_interpolationMiddlePoint = -1;
+    int m_selectedPointIndex = -1;
+    int m_compressionIndex = -1;
 };
 
 #endif // KECOLORMAPBAR_H
