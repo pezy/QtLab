@@ -93,8 +93,8 @@ void CKEColormapBar::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::MiddleButton)
     {
-        m_compressionIndex = _PosToColorIndex(event->pos());
         _SelectControlPoint(event->pos());
+        m_compressionIndex = m_listControlPoints.at(m_selectedPointIndex);
         m_bStartCompression = true;
     }
     else if (event->button() == Qt::LeftButton)
@@ -127,15 +127,15 @@ void CKEColormapBar::mouseMoveEvent(QMouseEvent* event)
 
 void CKEColormapBar::mouseReleaseEvent(QMouseEvent* event)
 {
-    m_selectedPointIndex = -1; 
-    
     if (event->button() == Qt::MiddleButton)
     {
-        int newIndex = _PosToColorIndex(event->pos());
+        int newIndex = m_listControlPoints.at(m_selectedPointIndex);
         _CalcCompressionToRight(m_compressionIndex, newIndex);
         _CalcCompressionToLeft(m_compressionIndex, newIndex);
         m_bStartCompression = false;
     }
+
+    m_selectedPointIndex = -1;
 
     update();
 }
@@ -272,6 +272,8 @@ void CKEColormapBar::_SetControlPoint(const QPointF& position)
     m_interpolationRange = QPair<int, int>(-1, -1);
 
     int newControlPointIndex = _PosToColorIndex(position);
+    newControlPointIndex = qMax(0, newControlPointIndex);
+    newControlPointIndex = qMin(255, newControlPointIndex);
 
     if (m_selectedPointIndex != -1)
     {
@@ -370,40 +372,54 @@ void CKEColormapBar::_CalcCompressionToRight(int oldIndex, int newIndex)
         return;
 
     // compression
-    int oldSize = 255 - oldIndex - 1;
-    int newSize = 255 - newIndex - 1;
+    int leftBoundingIndex, rightBoundingIndex;
+    int boundingIndex = m_selectedPointIndex == 0 ? m_listControlPoints.at(1) : m_listControlPoints.at(0);
+    if (boundingIndex < m_listControlPoints.at(m_selectedPointIndex))
+    {
+        leftBoundingIndex = boundingIndex;
+        rightBoundingIndex = 255;
+    }
+    else
+    {
+        leftBoundingIndex = 0;
+        rightBoundingIndex = boundingIndex;
+    }
 
-    QMultiMap<int, QColor> m_mapCompressed;
+    int oldSize = rightBoundingIndex - oldIndex + 1;
+    int newSize = rightBoundingIndex - newIndex + 1;
 
-    for (int i = oldIndex + 1; i != 255; ++i)
+    QMap<int, QColor> m_mapCompressed;
+
+    for (int i = oldIndex + 1; i != rightBoundingIndex; ++i)
     {
         m_mapCompressed.insert((i - oldIndex) * newSize / oldSize, m_pColormap->GetColorAt(i));
     }
 
-    for (int index : m_mapCompressed.keys())
+    m_mapCompressed.remove(0);
+
+    for (auto iter = m_mapCompressed.begin(); iter != m_mapCompressed.end(); ++iter)
     {
-        if (index == 0)
-            continue;
-
-        unsigned int r = 0, g = 0, b = 0;
-        int size = m_mapCompressed.values(index).size();
-        for (const QColor& color : m_mapCompressed.values(index))
-        {
-            r += color.red();
-            g += color.green();
-            b += color.blue();
-        }
-
-        QColor newColor(r / size, g / size, b / size);
-        m_pColormap->SetColorAt(newIndex + index, newColor);
+        m_pColormap->SetColorAt(newIndex + iter.key(), iter.value());
     }
 
     // stretching
-    QMap<int, QColor> mapFixedIndexColor;
-    
-    for (int i = 0; i <= oldIndex; ++i)
+    if (oldIndex == 0)
     {
-        mapFixedIndexColor.insert(i * newIndex / oldIndex, m_pColormap->GetColorAt(i));
+        for (int i = 0; i <= newIndex; ++i)
+        {
+            m_pColormap->SetColorAt(i, m_pColormap->GetColorAt(0));
+        }
+        return;
+    }
+
+    QMap<int, QColor> mapFixedIndexColor;
+
+    oldSize = oldIndex - leftBoundingIndex;
+    newSize = newIndex - leftBoundingIndex;
+    
+    for (int i = leftBoundingIndex; i <= oldIndex; ++i)
+    {
+        mapFixedIndexColor.insert(leftBoundingIndex + (i - leftBoundingIndex) * newSize / oldSize, m_pColormap->GetColorAt(i));
     }
 
     for (auto iter = mapFixedIndexColor.constBegin() + 1; iter != mapFixedIndexColor.constEnd(); ++iter)
@@ -442,37 +458,48 @@ void CKEColormapBar::_CalcCompressionToLeft(int oldIndex, int newIndex)
         return;
 
     // Compression
-    int oldSize = oldIndex + 1;
-    int newSize = newIndex + 1;
-
-    QMultiMap<int, QColor> m_mapCompressed;
-
-    for (int i = 1; i < oldIndex; ++i)
+    int leftBoundingIndex, rightBoundingIndex;
+    int boundingIndex = m_selectedPointIndex == 0 ? m_listControlPoints.at(1) : m_listControlPoints.at(0);
+    if (boundingIndex > m_listControlPoints.at(m_selectedPointIndex))
     {
-        m_mapCompressed.insert(i * newSize / oldSize, m_pColormap->GetColorAt(i));
+        leftBoundingIndex = 0;
+        rightBoundingIndex = boundingIndex;
+    }
+    else
+    {
+        leftBoundingIndex = boundingIndex;
+        rightBoundingIndex = 255;
     }
 
-    for (int index : m_mapCompressed.keys())
+    int oldSize = oldIndex - leftBoundingIndex + 1;
+    int newSize = newIndex - leftBoundingIndex + 1;
+
+    QMap<int, QColor> m_mapCompressed;
+
+    for (int i = leftBoundingIndex + 1; i != oldIndex; ++i)
     {
-        if (index == 0)
-            continue;
+        m_mapCompressed.insert((i - leftBoundingIndex) * newSize / oldSize, m_pColormap->GetColorAt(i));
+    }
 
-        unsigned int r = 0, g = 0, b = 0;
-        int size = m_mapCompressed.values(index).size();
-        for (const QColor& color : m_mapCompressed.values(index))
-        {
-            r += color.red();
-            g += color.green();
-            b += color.blue();
-        }
+    m_mapCompressed.remove(0);
 
-        QColor newColor(r / size, g / size, b / size);
-        m_pColormap->SetColorAt(index, newColor);
+    for (auto iter = m_mapCompressed.begin(); iter != m_mapCompressed.end(); ++iter)
+    {
+        m_pColormap->SetColorAt(leftBoundingIndex + iter.key(), iter.value());
     }
 
     // stretching
-    oldSize = 255 - oldIndex + 1;
-    newSize = 255 - newIndex + 1;
+    oldSize = rightBoundingIndex - oldIndex + 1;
+    newSize = rightBoundingIndex - newIndex + 1;
+
+    if (oldIndex == 255)
+    {
+        for (int i = newIndex; i <= 255; ++i)
+        {
+            m_pColormap->SetColorAt(i, m_pColormap->GetColorAt(255));
+        }
+        return;
+    }
 
     QMap<int, QColor> mapFixedIndexColor;
 
@@ -517,7 +544,7 @@ bool CKEColormapBar::_CheckBoundingRange(const QPointF& position)
 
     int boundingIndex = m_selectedPointIndex == 0 ? m_listControlPoints.at(1) : m_listControlPoints.at(0);
 
-    if (boundingIndex > m_compressionIndex)
+    if (boundingIndex > m_listControlPoints.at(m_selectedPointIndex))
     {
         return currentIndex < boundingIndex;
     }
