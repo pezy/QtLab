@@ -95,6 +95,7 @@ void CKEColormapBar::mousePressEvent(QMouseEvent* event)
     {
         m_compressionIndex = _PosToColorIndex(event->pos());
         _SelectControlPoint(event->pos());
+        m_bStartCompression = true;
     }
     else if (event->button() == Qt::LeftButton)
     {
@@ -108,8 +109,18 @@ void CKEColormapBar::mousePressEvent(QMouseEvent* event)
 
 void CKEColormapBar::mouseMoveEvent(QMouseEvent* event)
 {
-    _SetMiddlePoint(event->pos());
-    _SetControlPoint(event->pos());
+    if (m_bStartCompression)
+    {
+        if (!_CheckBoundingRange(event->pos()))
+            return;
+
+        _SetControlPoint(event->pos());
+    }
+    else
+    {
+        _SetMiddlePoint(event->pos());
+        _SetControlPoint(event->pos());
+    }
 
     update();
 }
@@ -123,6 +134,7 @@ void CKEColormapBar::mouseReleaseEvent(QMouseEvent* event)
         int newIndex = _PosToColorIndex(event->pos());
         _CalcCompressionToRight(m_compressionIndex, newIndex);
         _CalcCompressionToLeft(m_compressionIndex, newIndex);
+        m_bStartCompression = false;
     }
 
     update();
@@ -493,5 +505,24 @@ void CKEColormapBar::_CalcCompressionToLeft(int oldIndex, int newIndex)
     for (auto iter = mapFixedIndexColor.constBegin(); iter != mapFixedIndexColor.constEnd(); ++iter)
     {
         m_pColormap->SetColorAt(iter.key(), iter.value());
+    }
+}
+
+bool CKEColormapBar::_CheckBoundingRange(const QPointF& position)
+{
+    if (!m_lowerBarRect.contains(position))
+        return false;
+
+    int currentIndex = _PosToColorIndex(position);
+
+    int boundingIndex = m_selectedPointIndex == 0 ? m_listControlPoints.at(1) : m_listControlPoints.at(0);
+
+    if (boundingIndex > m_compressionIndex)
+    {
+        return currentIndex < boundingIndex;
+    }
+    else
+    {
+        return currentIndex > boundingIndex;
     }
 }

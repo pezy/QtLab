@@ -58,6 +58,8 @@ private:
     void _CalcCompressionToRight(int oldIndex, int newIndex);
     void _CalcCompressionToLeft(int oldIndex, int newIndex);
 
+    bool _CheckBoundingRange(const QPointF& position);
+
 private:
     CKEColormap* m_pColormap = nullptr;
 
@@ -76,6 +78,8 @@ private:
     int m_interpolationMiddlePoint = -1;
     int m_selectedPointIndex = -1;
     int m_compressionIndex = -1;
+
+    bool m_bStartCompression = false;
 };
 
 #endif // KECOLORMAPBAR_H
