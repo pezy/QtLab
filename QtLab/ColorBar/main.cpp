@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     QString strDBFile = CKEDBIO::GetDefaultDBFileName();
     pDBIO->ConnectDB(strDBFile);
     
-    CKEColormap::InitializeColormaps();
+    CKEColormap::InitializeColormapsFromFile();
     QStringList listName = CKEColormap::GetAllColormapsName();
     QStringList listField{"ID", "ColormapData"};
     

@@ -3,13 +3,13 @@
 #include <qrgb.h>
 #include <vector>
 #include <QtSql>
-#include <QDebug>
+#include <QVector3D>
 
 #include "kelog.h"
 #include "kedbio.h"
 #include "kesaveload.h"
 
-QList<CKEColormap> CKEColormap::m_staListColormap;
+QList<CKEColormap> CKEColormap::m_stdListColormap;
 
 bool CKEColormap::InitializeColormapsFromDB()
 {
@@ -32,7 +32,7 @@ bool CKEColormap::InitializeColormapsFromDB()
         QString colormapName = model.record(i).value("ID").toString();
         LoadDataFromBLOB(model.record(i).value("ColormapData"), rgbs, 256);
         CKEColormap colormap(colormapName, rgbs);
-        m_staListColormap << colormap;
+        m_stdListColormap << colormap;
     }
 
     return true;
@@ -63,7 +63,7 @@ bool CKEColormap::InitializeColormapsFromFile()
 	{
 		CKEColormap colormap(strColormapDir + sListFiles.at(i));
 		if(colormap.GetName() != "")
-			m_staListColormap<<colormap;
+			m_stdListColormap<<colormap;
 	}
 
 	return true;
@@ -73,9 +73,9 @@ QStringList CKEColormap::GetAllColormapsName()
 {
 	QStringList strListName;
 
-	for(int i = 0; i< m_staListColormap.size(); i++)
+	for(int i = 0; i< m_stdListColormap.size(); i++)
 	{
-		strListName<<m_staListColormap[i].GetName();
+		strListName<<m_stdListColormap[i].GetName();
 	}
 
 	return strListName;
@@ -180,10 +180,10 @@ CKEColormap::CKEColormap(const QString& sName, const QRgb(&arrRgbs)[256]) : m_st
 
 CKEColormap* CKEColormap::GetColormap(const QString& strName)
 {
-	for(int i = 0; i< m_staListColormap.size(); i++)
+	for(int i = 0; i< m_stdListColormap.size(); i++)
 	{
-		if(m_staListColormap[i].GetName() == strName)
-			return &(m_staListColormap[i]);
+		if(m_stdListColormap[i].GetName() == strName)
+			return &(m_stdListColormap[i]);
 	}
 
 	return NULL;
@@ -191,10 +191,10 @@ CKEColormap* CKEColormap::GetColormap(const QString& strName)
 
 CKEColormap* CKEColormap::GetColormap(unsigned int iIDX)
 {
-	if(iIDX >= m_staListColormap.size())
+	if(iIDX >= m_stdListColormap.size())
 		return NULL;
 	else
-		return &(m_staListColormap[iIDX]);
+		return &(m_stdListColormap[iIDX]);
 }
 
 QColor CKEColormap::GetColorAt(unsigned char iIDX)
@@ -210,9 +210,103 @@ void CKEColormap::SetColorAt(unsigned char iIDX, const QColor& color)
     m_iAlpha[iIDX] = qAlpha(color.rgba());
 }
 
-void CKEColormap::SaveColormap(QString name, QList<QColor> &vecColor)
+QString CKEColormap::GetName() const
 {
-    Q_ASSERT_X(vecColor.size() == 256, "colormap", "color's quantity illegal(should be 256).");
+    return m_strName;
+}
 
+const QList<int>& CKEColormap::GetTurningPointIndex()
+{
+    if (m_listTurningPoint.isEmpty())
+    {
+        _CalcTurningPoint();
+    }
 
+    return m_listTurningPoint;
+}
+
+void CKEColormap::ResetTurningPoint()
+{
+    m_listTurningPoint.clear();
+}
+
+float CKEColormap::_CalcColorDiff(int index1, int index2)
+{
+    QVector3D point1(m_iRed[index1], m_iGreen[index1], m_iBlue[index1]);
+    QVector3D point2(m_iRed[index2], m_iGreen[index2], m_iBlue[index2]);
+
+    float dist = point1.distanceToPoint(point2);
+
+    return point1.distanceToPoint(point2);
+}
+
+void CKEColormap::_CalcTurningPoint()
+{
+    m_listTurningPoint.clear();
+    m_listTurningPoint << 0;
+
+    int prev = 0;
+
+    auto isSameColor = [](float diff) -> bool{
+        return diff < 2.8f;
+    };
+
+    auto isSameDiff = [](float diff1, float diff2) -> bool{
+        return std::abs(diff2 - diff1) < 5.0f;
+    };
+
+    while (prev < 253)
+    {
+        int curr = prev + 1;
+        int next = curr + 1;
+
+        float diffPrev = _CalcColorDiff(prev, curr);
+        float diffNext = _CalcColorDiff(curr, next);
+
+        QDebug debug = qDebug();
+
+        debug << QString("%1<%2, %3> : %4").arg(curr).arg(diffPrev, 0, 'f', 3).arg(diffNext, 0, 'f', 3).arg(std::abs(diffNext - diffPrev), 0, 'f', 3);
+
+        if (isSameColor(diffPrev) && isSameColor(diffNext))
+        {
+            prev = curr;
+        }
+        else if (isSameColor(diffPrev) && !isSameColor(diffNext))
+        {
+            if (!isSameDiff(diffPrev, diffNext))
+            {
+                m_listTurningPoint << curr;
+            }
+            prev = curr;
+        }
+        else if (!isSameColor(diffPrev) && isSameColor(diffNext))
+        {
+            if (!isSameDiff(diffPrev, diffNext))
+            {
+                m_listTurningPoint << curr;
+            }
+            prev = curr + 1;
+        }
+        else
+        {
+            QVector3D vectorPrev(m_iRed[curr] - m_iRed[prev], m_iGreen[curr] - m_iGreen[prev], m_iBlue[curr] - m_iBlue[prev]);
+            QVector3D vectorNext(m_iRed[next] - m_iRed[curr], m_iGreen[next] - m_iGreen[curr], m_iBlue[next] - m_iBlue[curr]);
+
+            vectorPrev.normalize();
+            vectorNext.normalize();
+
+            float dotResult = QVector3D::dotProduct(vectorPrev, vectorNext);
+
+            debug << QString(" [%2]").arg(dotResult, 0, 'f', 3);
+
+            if (dotResult < 0.9f)
+            {
+                m_listTurningPoint << curr;
+            }
+
+            prev = curr;
+        }
+    }
+
+    m_listTurningPoint << 255;
 }

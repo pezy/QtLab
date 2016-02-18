@@ -30,10 +30,26 @@ public slots:
 
 protected:
     void paintEvent(QPaintEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
 
 private:
+    QPointF _ColorIndexToControlPos(int index);
+    int _PosToColorIndex(const QPointF& pos);
+
+    void _DrawControlPoint(int index);
+
+private:
+    const qreal m_controlRectHeight = 15.0;
+
     CKEColormap* m_pColormap = nullptr;
     CKEColormap* m_pTemplateColormap = nullptr;
+
+    QRectF m_alphaRect;
+    QRectF m_colorBarRect;
+    QRectF m_controlRect;
+
+    qreal m_singleColorBarWidth = 0.0;
 };
 
 #endif // KECOLORMAPEDITOR_H

@@ -26,13 +26,9 @@ public:
 public:
 	QColor GetColorAt(unsigned char iIDX);
     void SetColorAt(unsigned char iIDX, const QColor& color);
-
-	void SaveColormap(QString name, QList<QColor> &vecColor);
-
-	QString GetName()
-	{
-		return m_strName;
-	}
+    QString GetName() const;
+    const QList<int>& GetTurningPointIndex();
+    void ResetTurningPoint();
 
 private:
     //! @obsolete 2015-01-26. use db to save colormap.
@@ -41,13 +37,18 @@ private:
     CKEColormap(const QString& sName, const QColor (&arrColor)[256]);
     CKEColormap(const QString& sName, const QRgb(&arrRgbs)[256]);
 
+    float _CalcColorDiff(int index1, int index2);
+    void _CalcTurningPoint();
+
 	QString		m_strName;
 	unsigned char	m_iRed[256];
 	unsigned char	m_iGreen[256];
 	unsigned char	m_iBlue[256];
 	unsigned char   m_iAlpha[256];
 
-	static QList<CKEColormap>	m_staListColormap;
+    QList<int> m_listTurningPoint;
+
+	static QList<CKEColormap>	m_stdListColormap;
 };
 
 #endif // CKECOLORMAP_H
