@@ -189,11 +189,13 @@ bool CKEColormap::SaveAs()
         return false;
     }
 
-    QJsonObject colormap;
+    rapidjson::Document colormap;
     _WriteToJson(colormap);
 
-    QJsonDocument saveDoc(colormap);
-    saveFile.write(saveDoc.toJson());
+    rapidjson::StringBuffer sb;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(sb);
+    colormap.Accept(writer);
+    saveFile.write(sb.GetString());
 
     return true;
 }
@@ -368,7 +370,44 @@ void CKEColormap::_WriteToJson(QJsonObject &colormap)
 
 void CKEColormap::_WriteToJson(rapidjson::Document &colormap)
 {
-    rapidjson::Value number(m_colorNum);
-    rapidjson::Value invalidColor(rapidjson::kObjectType);
+    colormap.SetObject();
+    rapidjson::Document::AllocatorType& allocator = colormap.GetAllocator();
+    
+    colormap.AddMember("number", m_colorNum, allocator);
 
+    rapidjson::Value invalidColor(rapidjson::kObjectType);
+    invalidColor.AddMember("red", m_invalidColor.red(), allocator);
+    invalidColor.AddMember("green", m_invalidColor.green(), allocator);
+    invalidColor.AddMember("blue", m_invalidColor.blue(), allocator);
+    invalidColor.AddMember("alpha", m_invalidColor.alpha(), allocator);
+
+    colormap.AddMember("invalid_point", invalidColor, allocator);
+
+    rapidjson::Value rgbControlPoint(rapidjson::kArrayType);
+
+    for (auto iter = m_mapControlPointsRgb.cbegin(); iter != m_mapControlPointsRgb.cend(); ++iter)
+    {
+        rapidjson::Value posColor(rapidjson::kObjectType);
+        posColor.AddMember("position", iter.key(), allocator);
+        posColor.AddMember("red", qRed(iter.value()), allocator);
+        posColor.AddMember("green", qGreen(iter.value()), allocator);
+        posColor.AddMember("blue", qBlue(iter.value()), allocator);
+
+        rgbControlPoint.PushBack(posColor, allocator);
+    }
+
+    colormap.AddMember("rgb_control_points", rgbControlPoint, allocator);
+
+    rapidjson::Value alphaControlPoint(rapidjson::kArrayType);
+
+    for (auto iter = m_mapControlPointsAlpah.cbegin(); iter != m_mapControlPointsAlpah.cend(); ++iter)
+    {
+        rapidjson::Value posAlpha(rapidjson::kObjectType);
+        posAlpha.AddMember("position", iter.key(), allocator);
+        posAlpha.AddMember("alpha", iter.value(), allocator);
+
+        alphaControlPoint.PushBack(posAlpha, allocator);
+    }
+
+    colormap.AddMember("alpha_control_points", alphaControlPoint, allocator);
 }

@@ -1,85 +1,84 @@
 {
-    "alpha_control_points": [
-    ],
-    "invalid_point": {
-        "alpha": 255,
-        "blue": 255,
-        "green": 255,
-        "red": 255
-    },
     "number": 254,
+    "invalid_point": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 255
+    },
     "rgb_control_points": [
         {
-            "blue": 0,
-            "green": 0,
             "position": 0,
-            "red": 192
+            "red": 192,
+            "green": 0,
+            "blue": 0
         },
         {
-            "blue": 193,
-            "green": 191,
             "position": 41,
-            "red": 255
-        },
-        {
-            "blue": 0,
-            "green": 126,
-            "position": 42,
-            "red": 229
-        },
-        {
-            "blue": 63,
+            "red": 255,
             "green": 191,
+            "blue": 193
+        },
+        {
+            "position": 42,
+            "red": 229,
+            "green": 126,
+            "blue": 0
+        },
+        {
             "position": 83,
-            "red": 255
+            "red": 255,
+            "green": 191,
+            "blue": 63
         },
         {
-            "blue": 0,
-            "green": 229,
             "position": 84,
-            "red": 229
+            "red": 229,
+            "green": 229,
+            "blue": 0
         },
         {
-            "blue": 192,
-            "green": 255,
             "position": 126,
-            "red": 255
-        },
-        {
-            "blue": 0,
-            "green": 63,
-            "position": 127,
-            "red": 0
-        },
-        {
-            "blue": 127,
+            "red": 255,
             "green": 255,
+            "blue": 192
+        },
+        {
+            "position": 127,
+            "red": 0,
+            "green": 63,
+            "blue": 0
+        },
+        {
             "position": 168,
-            "red": 127
+            "red": 127,
+            "green": 255,
+            "blue": 127
         },
         {
-            "blue": 191,
-            "green": 0,
             "position": 169,
-            "red": 0
-        },
-        {
-            "blue": 255,
-            "green": 192,
-            "position": 210,
-            "red": 192
-        },
-        {
-            "blue": 129,
+            "red": 0,
             "green": 0,
-            "position": 211,
-            "red": 129
+            "blue": 191
         },
         {
-            "blue": 255,
-            "green": 128,
+            "position": 210,
+            "red": 192,
+            "green": 192,
+            "blue": 255
+        },
+        {
+            "position": 211,
+            "red": 129,
+            "green": 0,
+            "blue": 129
+        },
+        {
             "position": 253,
-            "red": 255
+            "red": 255,
+            "green": 128,
+            "blue": 255
         }
-    ]
+    ],
+    "alpha_control_points": []
 }
