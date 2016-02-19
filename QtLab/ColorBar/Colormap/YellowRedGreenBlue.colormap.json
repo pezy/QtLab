@@ -1,0 +1,55 @@
+{
+    "alpha_control_points": [
+    ],
+    "invalid_point": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+    },
+    "number": 254,
+    "rgb_control_points": [
+        {
+            "blue": 78,
+            "green": 255,
+            "position": 0,
+            "red": 255
+        },
+        {
+            "blue": 0,
+            "green": 255,
+            "position": 16,
+            "red": 255
+        },
+        {
+            "blue": 0,
+            "green": 1,
+            "position": 64,
+            "red": 255
+        },
+        {
+            "blue": 3,
+            "green": 255,
+            "position": 113,
+            "red": 0
+        },
+        {
+            "blue": 255,
+            "green": 253,
+            "position": 165,
+            "red": 0
+        },
+        {
+            "blue": 255,
+            "green": 0,
+            "position": 217,
+            "red": 0
+        },
+        {
+            "blue": 255,
+            "green": 0,
+            "position": 253,
+            "red": 0
+        }
+    ]
+}

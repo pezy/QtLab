@@ -28,9 +28,9 @@ QPixmap CKEColormapCombo::_Pixmap(const QString& name)
     CKEColormap *colormap = CKEColormap::GetColormap(name);
 	QLinearGradient gradient(0, m_pIconSize.height()/2, m_pIconSize.width(), m_pIconSize.height()/2);
 
-	for (unsigned i=0; i<256; ++i)
+    for (auto i = 0; i < colormap->GetColorNum(); ++i)
 	{
-		gradient.setColorAt(i/255.0f, colormap->GetColorAt(static_cast<unsigned char>(i)));
+        gradient.setColorAt(i * 1.0f / (colormap->GetColorNum() - 1), colormap->GetColorAt(i));
 	}
 
 	painter.setRenderHint(QPainter::Antialiasing, true);

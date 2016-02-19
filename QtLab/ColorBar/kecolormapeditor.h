@@ -27,6 +27,7 @@ public slots:
     void slotReset();
     void slotFlip();
     void slotTemplateChanged(const QString& templateName);
+    void slotSaveAll();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -45,7 +46,6 @@ private:
     CKEColormap* m_pColormap = nullptr;
     CKEColormap* m_pTemplateColormap = nullptr;
 
-    QRectF m_alphaRect;
     QRectF m_colorBarRect;
     QRectF m_controlRect;
 

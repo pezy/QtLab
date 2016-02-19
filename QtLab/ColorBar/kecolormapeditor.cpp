@@ -2,6 +2,8 @@
 
 #include <QPainter>
 #include <QResizeEvent>
+#include <QDebug>
+#include <qmath.h>
 
 #include "kecolormap.h"
 
@@ -14,7 +16,11 @@ CKEColormapEditor::CKEColormapEditor(QWidget *parent)
 
 CKEColormapEditor::~CKEColormapEditor()
 {
-
+    if (m_pColormap)
+    {
+        delete m_pColormap;
+        m_pColormap = nullptr;
+    }
 }
 
 void CKEColormapEditor::slotReset()
@@ -22,12 +28,7 @@ void CKEColormapEditor::slotReset()
     if (!m_pColormap || !m_pTemplateColormap)
         return;
 
-    for (int i = 0; i != 256; ++i)
-    {
-        m_pColormap->SetColorAt(i, m_pTemplateColormap->GetColorAt(i));
-    }
-
-    m_pColormap->ResetTurningPoint();
+    *m_pColormap = *m_pTemplateColormap;
 
     update();
 }
@@ -37,14 +38,7 @@ void CKEColormapEditor::slotFlip()
     if (!m_pColormap)
         return;
 
-    int first = 0, last = 256;
-    while (first != last && first != --last)
-    {
-        QColor temp = m_pColormap->GetColorAt(first);
-        m_pColormap->SetColorAt(first, m_pColormap->GetColorAt(last));
-        m_pColormap->SetColorAt(last, temp);
-        ++first;
-    }
+    m_pColormap->Flip();
 
     update();
 }
@@ -61,15 +55,19 @@ void CKEColormapEditor::slotTemplateChanged(const QString& templateName)
         if (!m_pTemplateColormap)
             return;
 
-        for (int i = 0; i != 256; ++i)
-        {
-            m_pColormap->SetColorAt(i, m_pTemplateColormap->GetColorAt(i));
-        }
-
-        m_pColormap->ResetTurningPoint();
+        *m_pColormap = *m_pTemplateColormap;
     }
 
     update();
+}
+
+void CKEColormapEditor::slotSaveAll()
+{
+    for (const QString& strName : CKEColormap::GetAllColormapsName())
+    {
+        CKEColormap *pColormap = CKEColormap::GetColormap(strName);
+        pColormap->SaveAs();
+    }
 }
 
 void CKEColormapEditor::paintEvent(QPaintEvent* event)
@@ -85,20 +83,20 @@ void CKEColormapEditor::paintEvent(QPaintEvent* event)
     pt.fillRect(8, 8, 8, 8, color);
     pt.end();
 
-    m_singleColorBarWidth = m_colorBarRect.width() / 256;
+    m_singleColorBarWidth = m_colorBarRect.width() / m_pColormap->GetColorNum();
 
     QPainter painter(this);
     painter.save();
-    painter.drawTiledPixmap(m_alphaRect, tile);
+    painter.drawTiledPixmap(m_colorBarRect, tile);
 
-    for (int i = 0; i != 256; ++i)
+    for (int i = 0; i != m_pColormap->GetColorNum(); ++i)
     {
         painter.setPen(m_pColormap->GetColorAt(i));
         painter.setBrush(m_pColormap->GetColorAt(i));
         painter.drawRect(i * m_singleColorBarWidth, m_colorBarRect.y(), m_singleColorBarWidth, m_colorBarRect.height());
     }
 
-    for (auto i : m_pColormap->GetTurningPointIndex())
+    for (auto i : m_pColormap->GetControlPointsIndex())
     {
         _DrawControlPoint(i);
     }
@@ -108,32 +106,32 @@ void CKEColormapEditor::paintEvent(QPaintEvent* event)
 
 void CKEColormapEditor::resizeEvent(QResizeEvent* event)
 {
-    qreal alphaRectHeight = (event->size().height() - m_controlRectHeight) * 0.1;
-    qreal colorBarHeight = (event->size().height() - m_controlRectHeight) * 0.9;
-    m_alphaRect.setRect(0, 0, event->size().width(), alphaRectHeight);
-    m_colorBarRect.setRect(0, alphaRectHeight, event->size().width(), colorBarHeight);
+    m_colorBarRect.setRect(0, 0, event->size().width(), event->size().height() - m_controlRectHeight);
     m_controlRect.setRect(0, event->size().height() - m_controlRectHeight, event->size().width(), m_controlRectHeight);
 }
 
 void CKEColormapEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    if (qFuzzyCompare(m_singleColorBarWidth, 0.0))
+        return;
+
     if (m_colorBarRect.contains(event->pos()))
     {
         int curIndex = _PosToColorIndex(event->pos());
-        QRgb curRgb = m_pColormap->GetColorAt(curIndex).rgb();
-        emit ShowMsg("Index: " + QString::number(curIndex) + QString("\tColor: %1,%2,%3").arg(qRed(curRgb)).arg(qGreen(curRgb)).arg(qBlue(curRgb)));
+        QRgb curRgb = m_pColormap->GetColorAt(curIndex).rgba();
+        emit ShowMsg("Index: " + QString::number(curIndex) + QString("\tColor: %1,%2,%3,%4").arg(qRed(curRgb)).arg(qGreen(curRgb)).arg(qBlue(curRgb)).arg(qAlpha(curRgb)));
     }
     else if (m_controlRect.contains(event->pos()))
     {
         int controlIndexBeg = _PosToColorIndex(event->pos() + QPointF(-5, 0));
         int controlIndexEnd = _PosToColorIndex(event->pos() + QPointF( 5, 0));
 
-        for (auto index : m_pColormap->GetTurningPointIndex())
+        for (auto index : m_pColormap->GetControlPointsIndex())
         {
             if (controlIndexBeg <= index && index <= controlIndexEnd)
             {
-                QRgb curRgb = m_pColormap->GetColorAt(index).rgb();
-                emit ShowMsg("Control point: " + QString::number(index) + QString("\tColor: %1,%2,%3").arg(qRed(curRgb)).arg(qGreen(curRgb)).arg(qBlue(curRgb)));
+                QRgb curRgb = m_pColormap->GetColorAt(index).rgba();
+                emit ShowMsg("Control point: " + QString::number(index) + QString("\tColor: %1,%2,%3,%4").arg(qRed(curRgb)).arg(qGreen(curRgb)).arg(qBlue(curRgb)).arg(qAlpha(curRgb)));
             }
         }
     }
@@ -152,12 +150,12 @@ QPointF CKEColormapEditor::_ColorIndexToControlPos(int index)
 
 int CKEColormapEditor::_PosToColorIndex(const QPointF& pos)
 {
-    return qRound(pos.x() / m_singleColorBarWidth);
+    return qFloor(pos.x() / m_singleColorBarWidth);
 }
 
 void CKEColormapEditor::_DrawControlPoint(int index)
 {
-    if (index < 0 || 255 < index)
+    if (index < 0 || m_pColormap->GetColorNum() <= index)
         return;
 
     QPainter painter(this);

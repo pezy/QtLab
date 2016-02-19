@@ -5,68 +5,124 @@
 #include <QtSql>
 #include <QVector3D>
 
+#include "rapidjson\prettywriter.h"
+
 #include "kelog.h"
 #include "kedbio.h"
 #include "kesaveload.h"
 
 QList<CKEColormap> CKEColormap::m_stdListColormap;
 
-bool CKEColormap::InitializeColormapsFromDB()
+bool CKEColormap::InitializeColormapsFromJason()
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(CKEDBIO::GetDefaultDBFileName());
+    const QString& jasonColorScalesDir = "C:\\Program Files\\JasonSW\\Jason 8.4\\etc\\colorscales";
 
-    if (!db.open())
+    QDir qDir(jasonColorScalesDir);
+    if (!qDir.exists())
     {
-        CKELog::AddLog("Open DB error: " + CKEDBIO::GetDefaultDBFileName());
-        qDebug() << db.lastError();
+        CKELog::AddLog("Can not find the jason 8.4 colormap directory at " + jasonColorScalesDir + "!");
         return false;
     }
 
-    QRgb rgbs[256];
-
-    QSqlQueryModel model;
-    model.setQuery("Select * from Colormap");
-    for (int i = 0; i < model.rowCount(); ++i)
+    QStringList sListFilter;
+    sListFilter << "*.shs";
+    QStringList sListFiles = qDir.entryList(sListFilter, QDir::Files);
+    
+    if (sListFiles.isEmpty())
     {
-        QString colormapName = model.record(i).value("ID").toString();
-        LoadDataFromBLOB(model.record(i).value("ColormapData"), rgbs, 256);
-        CKEColormap colormap(colormapName, rgbs);
+        CKELog::AddLog("No colormap files found at " + jasonColorScalesDir + "!");
+        return false;
+    }
+
+    for (const auto& fileName : sListFiles)
+    {
+        QString fileDir = jasonColorScalesDir + QDir::separator() + fileName;
+
+        QFileInfo fileInfo(fileDir);
+
+        // open file
+        QFile file(fileDir);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            Q_ASSERT(false);
+        }
+
+        // read control points
+        bool bRgb = false;
+        bool bAlpha = false;
+        QMap<int, QRgb> mapRgb;
+        QMap<int, uchar> mapAlpha;
+
+        int numCol = 0;
+        qreal pos, r, g, b, a;
+
+        QTextStream stream(&file);
+        while (!stream.atEnd())
+        {
+            QString line = stream.readLine();
+
+            if (line.section(':', 0, 0) == "number_of_colors")
+            {
+                numCol = line.section('=', 1).remove(';').trimmed().toInt();
+            }
+
+            if (line.section(':', 0, 0) == "rgb_control_points") // rgb begin
+            {
+                bRgb = true;
+            }
+            else if (line.section(':', 0, 0) == "alpha_control_points") // alpha begin
+            {
+                bAlpha = true;
+            }
+            else if (line == ";")
+            {
+                bRgb = false;
+                bAlpha = false;
+            }
+
+            if (bRgb)
+            {
+                if (line.contains("fraction:real"))
+                {
+                    pos = line.section('=', 1).remove(';').trimmed().toDouble();
+                }
+                else if (line.contains("red:real"))
+                {
+                    r = line.section('=', 1).remove(';').trimmed().toDouble();
+                }
+                else if (line.contains("green:real"))
+                {
+                    g = line.section('=', 1).remove(';').trimmed().toDouble();
+                }
+                else if (line.contains("blue:real"))
+                {
+                    b = line.section('=', 1).remove(';').trimmed().toDouble();
+
+                    QColor color(qRound(r / 100 * 255), qRound(g / 100 * 255), qRound(b / 100 * 255));
+                    mapRgb.insert(qRound(pos * (numCol - 1)), color.rgb());
+                }
+            }
+            
+            if (bAlpha)
+            {
+                if (line.contains("fraction:real"))
+                {
+                    pos = line.section('=', 1).remove(';').trimmed().toDouble();
+                }
+                else if (line.contains("alpha:real"))
+                {
+                    a = line.section('=', 1).remove(';').trimmed().toDouble();
+
+                    mapAlpha.insert(qRound(pos * (numCol - 1)), qBound((uchar)0, (uchar)(a / 100 * 255), (uchar)255));
+                }
+            }
+        }
+       
+        CKEColormap colormap(fileInfo.baseName(), mapRgb, mapAlpha, numCol);
         m_stdListColormap << colormap;
     }
 
     return true;
-}
-
-bool CKEColormap::InitializeColormapsFromFile()
-{
-    QString strColormapDir = QDir::currentPath() + QDir::separator() + "Colormap" + QDir::separator();
-	QDir qDir(strColormapDir);
-	if(!qDir.exists())
-	{
-        CKELog::AddLog("Can not find the colormap directory at " + strColormapDir + "!");
-		return false;
-	}
-
-	QStringList sListFilter;
-	sListFilter<<"*.pal";
-	QStringList sListFiles = qDir.entryList(sListFilter, QDir::Files);
-	int i, iNum = sListFiles.size();
-
-	if(iNum == 0)
-	{
-		CKELog::AddLog("No colormap files found at " + strColormapDir + "!");
-		return false;
-	}
-
-	for(i = 0; i < iNum; i++)
-	{
-		CKEColormap colormap(strColormapDir + sListFiles.at(i));
-		if(colormap.GetName() != "")
-			m_stdListColormap<<colormap;
-	}
-
-	return true;
 }
 
 QStringList CKEColormap::GetAllColormapsName()
@@ -79,103 +135,6 @@ QStringList CKEColormap::GetAllColormapsName()
 	}
 
 	return strListName;
-}
-
-CKEColormap::CKEColormap(const QString& strFile)
-{
-	// set name
-	QFileInfo qFI(strFile);
-	m_strName = qFI.baseName();
-
-	// open file
-	QFile qFile(strFile);
-	if (!qFile.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		Q_ASSERT(false);
-	}
-	
-	// read head
-	QString strLine;		
-	while(!qFile.atEnd())
-	{
-		strLine = qFile.readLine();
-		if (strLine.contains("<ColorMap>"))
-			break;
-	}
-
-	// read data
-	QStringList strListLine;
-	std::vector<unsigned char> vecA, vecR, vecG, vecB;
-	while(!qFile.atEnd())
-	{
-		strLine = qFile.readLine();
-		if (strLine.contains("</ColorMap>"))
-			break;
-
-		strLine.remove("Color", Qt::CaseInsensitive);
-		strLine.remove("=", Qt::CaseInsensitive);
-		strLine = strLine.simplified();
-		strListLine = strLine.split(',', QString::SkipEmptyParts);
-		if (strListLine.size() < 4)
-			break;
-
-		vecA.push_back(strListLine[0].toShort());
-		vecR.push_back(strListLine[1].toShort());
-		vecG.push_back(strListLine[2].toShort());
-		vecB.push_back(strListLine[3].toShort());
-	}
-
-	int nSize = (int) vecA.size();
-	int IInterval = 256/nSize;
-	for (int i=0; i<nSize; ++i)
-	{
-		m_iAlpha[i*IInterval]	= vecA[i];
-		m_iRed[i*IInterval]		= vecR[i];
-		m_iGreen[i*IInterval]	= vecG[i];
-		m_iBlue[i*IInterval]	= vecB[i];
-
-		if (i < nSize -1)
-		{
-			for (int j=i*IInterval+1; j<(i+1)*IInterval; ++j)
-			{
-				float fFactor = (j - i*IInterval)*1.f/IInterval;
-				m_iAlpha[j]	= vecA[i]*(1.f - fFactor) + vecA[i+1]*fFactor;
-				m_iRed[j]	= vecR[i]*(1.f - fFactor) + vecR[i+1]*fFactor;
-				m_iGreen[j]	= vecG[i]*(1.f - fFactor) + vecG[i+1]*fFactor;
-				m_iBlue[j]	= vecB[i]*(1.f - fFactor) + vecB[i+1]*fFactor;
-			}
-
-		}
-	}
-
-	m_iAlpha[255]	= m_iAlpha[254];
-	m_iRed[255]		= m_iRed[254];
-	m_iGreen[255]	= m_iGreen[254];
-	m_iBlue[255]	= m_iBlue[254];
-
-	qFile.close();
-}
-
-CKEColormap::CKEColormap(const QString& sName, const QColor(&arrColor)[256]) : m_strName(sName)
-{
-    for (int i = 0; i < 256; ++i)
-    {
-        m_iRed[i] = qRed(arrColor[i].rgba());
-        m_iGreen[i] = qGreen(arrColor[i].rgba());
-        m_iBlue[i] = qBlue(arrColor[i].rgba());
-        m_iAlpha[i] = qAlpha(arrColor[i].rgba());
-    }
-}
-
-CKEColormap::CKEColormap(const QString& sName, const QRgb(&arrRgbs)[256]) : m_strName(sName)
-{
-    for (int i = 0; i < 256; ++i)
-    {
-        m_iRed[i] = qRed(arrRgbs[i]);
-        m_iGreen[i] = qGreen(arrRgbs[i]);
-        m_iBlue[i] = qBlue(arrRgbs[i]);
-        m_iAlpha[i] = qAlpha(arrRgbs[i]);
-    }
 }
 
 CKEColormap* CKEColormap::GetColormap(const QString& strName)
@@ -197,17 +156,11 @@ CKEColormap* CKEColormap::GetColormap(unsigned int iIDX)
 		return &(m_stdListColormap[iIDX]);
 }
 
-QColor CKEColormap::GetColorAt(unsigned char iIDX)
+QColor CKEColormap::GetColorAt(int index) const
 {
-	return QColor(m_iRed[iIDX], m_iGreen[iIDX], m_iBlue[iIDX], m_iAlpha[iIDX]);
-}
+    Q_ASSERT(0 <= index && index < m_colorNum);
 
-void CKEColormap::SetColorAt(unsigned char iIDX, const QColor& color)
-{
-    m_iRed[iIDX] = qRed(color.rgba());
-    m_iGreen[iIDX] = qGreen(color.rgba());
-    m_iBlue[iIDX] = qBlue(color.rgba());
-    m_iAlpha[iIDX] = qAlpha(color.rgba());
+    return m_listColor[index];
 }
 
 QString CKEColormap::GetName() const
@@ -215,98 +168,207 @@ QString CKEColormap::GetName() const
     return m_strName;
 }
 
-const QList<int>& CKEColormap::GetTurningPointIndex()
+QList<int> CKEColormap::GetControlPointsIndex() const
 {
-    if (m_listTurningPoint.isEmpty())
+    return m_mapControlPointsRgb.keys();
+}
+
+int CKEColormap::GetColorNum() const
+{
+    return m_colorNum;
+}
+
+bool CKEColormap::SaveAs()
+{
+    QString strFilePath = QDir::currentPath() + QDir::separator() + "Colormap" + QDir::separator() + m_strName + ".colormap.json";
+
+    QFile saveFile(strFilePath);
+    if (!saveFile.open(QIODevice::WriteOnly))
     {
-        _CalcTurningPoint();
+        qWarning("Couldn't open save file.");
+        return false;
     }
 
-    return m_listTurningPoint;
+    QJsonObject colormap;
+    _WriteToJson(colormap);
+
+    QJsonDocument saveDoc(colormap);
+    saveFile.write(saveDoc.toJson());
+
+    return true;
 }
 
-void CKEColormap::ResetTurningPoint()
+void CKEColormap::SetControlPointRgb(uchar index, const QRgb& rgb)
 {
-    m_listTurningPoint.clear();
+    m_mapControlPointsRgb.insert(index, rgb);
+
+    _UpdateColormap();
 }
 
-float CKEColormap::_CalcColorDiff(int index1, int index2)
+void CKEColormap::Flip()
 {
-    QVector3D point1(m_iRed[index1], m_iGreen[index1], m_iBlue[index1]);
-    QVector3D point2(m_iRed[index2], m_iGreen[index2], m_iBlue[index2]);
+    QList<int> indices = m_mapControlPointsRgb.keys();
+    QList<QRgb> rgbs = m_mapControlPointsRgb.values();
 
-    float dist = point1.distanceToPoint(point2);
+    m_mapControlPointsRgb.clear();
 
-    return point1.distanceToPoint(point2);
-}
-
-void CKEColormap::_CalcTurningPoint()
-{
-    m_listTurningPoint.clear();
-    m_listTurningPoint << 0;
-
-    int prev = 0;
-
-    auto isSameColor = [](float diff) -> bool{
-        return diff < 2.8f;
-    };
-
-    auto isSameDiff = [](float diff1, float diff2) -> bool{
-        return std::abs(diff2 - diff1) < 5.0f;
-    };
-
-    while (prev < 253)
+    for (auto i = 0; i != indices.size(); ++i)
     {
-        int curr = prev + 1;
-        int next = curr + 1;
+        m_mapControlPointsRgb.insert(m_colorNum - indices.at(i) - 1, rgbs.at(i));
+    }
 
-        float diffPrev = _CalcColorDiff(prev, curr);
-        float diffNext = _CalcColorDiff(curr, next);
+    indices = m_mapControlPointsAlpah.keys();
+    QList<uchar> alphas = m_mapControlPointsAlpah.values();
 
-        QDebug debug = qDebug();
+    m_mapControlPointsAlpah.clear();
 
-        debug << QString("%1<%2, %3> : %4").arg(curr).arg(diffPrev, 0, 'f', 3).arg(diffNext, 0, 'f', 3).arg(std::abs(diffNext - diffPrev), 0, 'f', 3);
+    for (auto i = 0; i != indices.size(); ++i)
+    {
+        m_mapControlPointsAlpah.insert(m_colorNum - indices.at(i) - 1, alphas.at(i));
+    }
 
-        if (isSameColor(diffPrev) && isSameColor(diffNext))
+    _UpdateColormap();
+}
+
+CKEColormap::CKEColormap(const QString& sName, const QMap<int, QRgb>& mapRgb, const QMap<int, uchar>& mapAlpha, int colNum, QColor invalidCol)
+    :m_strName(sName)
+{
+    if (mapRgb.size() < 2)
+        throw "At least have two control points.";
+
+    m_mapControlPointsRgb = mapRgb;
+    m_mapControlPointsAlpah = mapAlpha;
+    m_colorNum = colNum;
+    m_invalidColor = invalidCol;
+
+    _UpdateColormap();
+}
+
+CKEColormap::CKEColormap(const CKEColormap& colormap)
+    : m_strName(colormap.m_strName)
+    , m_mapControlPointsRgb(colormap.m_mapControlPointsRgb)
+    , m_mapControlPointsAlpah(colormap.m_mapControlPointsAlpah)
+    , m_colorNum(colormap.m_colorNum)
+    , m_invalidColor(colormap.m_invalidColor)
+{
+    for (auto i = 0; i != m_colorNum; ++i)
+    {
+        m_listColor[i] = colormap.GetColorAt(i);
+    }
+}
+
+CKEColormap& CKEColormap::operator = (const CKEColormap& colormap)
+{
+    m_strName = colormap.m_strName;
+    m_mapControlPointsRgb = colormap.m_mapControlPointsRgb;
+    m_mapControlPointsAlpah = colormap.m_mapControlPointsAlpah;
+    m_colorNum = colormap.m_colorNum;
+    m_invalidColor = colormap.m_invalidColor;
+
+    for (auto i = 0; i != m_colorNum; ++i)
+    {
+        m_listColor[i] = colormap.GetColorAt(i);
+    }
+
+    return *this;
+}
+
+void CKEColormap::_UpdateColormap()
+{
+    if (m_mapControlPointsRgb.firstKey() != 0)
+    {
+        for (auto i = 0; i != m_mapControlPointsRgb.firstKey(); ++i)
         {
-            prev = curr;
-        }
-        else if (isSameColor(diffPrev) && !isSameColor(diffNext))
-        {
-            if (!isSameDiff(diffPrev, diffNext))
-            {
-                m_listTurningPoint << curr;
-            }
-            prev = curr;
-        }
-        else if (!isSameColor(diffPrev) && isSameColor(diffNext))
-        {
-            if (!isSameDiff(diffPrev, diffNext))
-            {
-                m_listTurningPoint << curr;
-            }
-            prev = curr + 1;
-        }
-        else
-        {
-            QVector3D vectorPrev(m_iRed[curr] - m_iRed[prev], m_iGreen[curr] - m_iGreen[prev], m_iBlue[curr] - m_iBlue[prev]);
-            QVector3D vectorNext(m_iRed[next] - m_iRed[curr], m_iGreen[next] - m_iGreen[curr], m_iBlue[next] - m_iBlue[curr]);
-
-            vectorPrev.normalize();
-            vectorNext.normalize();
-
-            float dotResult = QVector3D::dotProduct(vectorPrev, vectorNext);
-
-            debug << QString(" [%2]").arg(dotResult, 0, 'f', 3);
-
-            if (dotResult < 0.9f)
-            {
-                m_listTurningPoint << curr;
-            }
-
-            prev = curr;
+            m_listColor[i] = m_mapControlPointsRgb.first();
         }
     }
 
-    m_listTurningPoint << 255;
+    // interpolation
+    for (auto iter = m_mapControlPointsRgb.cbegin(); iter != m_mapControlPointsRgb.cend(); ++iter)
+    {
+        if (std::next(iter) == m_mapControlPointsRgb.cend())
+            break;
+
+        for (auto i = iter.key(); i != std::next(iter).key(); ++i)
+        {
+            float factor = (i - iter.key()) * 1.0f / (std::next(iter).key() - iter.key());
+
+            m_listColor[i].setRed(qRed(iter.value()) + qRound((qRed(std::next(iter).value()) - qRed(iter.value())) * factor));
+            m_listColor[i].setGreen(qGreen(iter.value()) + qRound((qGreen(std::next(iter).value()) - qGreen(iter.value())) * factor));
+            m_listColor[i].setBlue(qBlue(iter.value()) + qRound((qBlue(std::next(iter).value()) - qBlue(iter.value())) * factor));
+        }
+    }
+
+    if (m_mapControlPointsRgb.lastKey() != m_colorNum - 1)
+    {
+        for (auto i = m_mapControlPointsRgb.lastKey(); i != m_colorNum; ++i)
+        {
+            m_listColor[i] = m_mapControlPointsRgb.last();
+        }
+    }
+    else
+    {
+        m_listColor[m_colorNum - 1] = m_mapControlPointsRgb.last();
+    }
+
+    // alpha
+    for (auto iter = m_mapControlPointsAlpah.cbegin(); iter != m_mapControlPointsAlpah.cend(); ++iter)
+    {
+        m_listColor[iter.key()].setAlpha(iter.value());
+    }
+}
+
+void CKEColormap::_WriteToJson(QJsonObject &colormap)
+{
+    colormap["number"] = m_colorNum;
+
+    QJsonObject invalidColor
+    {
+        { "red", m_invalidColor.red() },
+        { "green", m_invalidColor.green() },
+        { "blue", m_invalidColor.blue() },
+        { "alpha", m_invalidColor.alpha() }
+    };
+
+    colormap["invalid_point"] = invalidColor;
+
+    QJsonArray arrayRgb;
+
+    for (auto iter = m_mapControlPointsRgb.cbegin(); iter != m_mapControlPointsRgb.cend(); ++iter)
+    {
+        QJsonObject rgbControlPoint
+        {
+            { "position", iter.key() },
+            { "red", qRed(iter.value()) },
+            { "green", qGreen(iter.value()) },
+            { "blue", qBlue(iter.value()) }
+
+        };
+
+        arrayRgb << rgbControlPoint;
+    }
+
+    colormap["rgb_control_points"] = arrayRgb;
+
+    QJsonArray arrayAlpha;
+
+    for (auto iter = m_mapControlPointsAlpah.cbegin(); iter != m_mapControlPointsAlpah.cend(); ++iter)
+    {
+        QJsonObject alphaControlPoint
+        {
+            { "position", iter.key() },
+            { "alpha", iter.value() }
+        };
+
+        arrayAlpha << alphaControlPoint;
+    }
+
+    colormap["alpha_control_points"] = arrayAlpha;
+}
+
+void CKEColormap::_WriteToJson(rapidjson::Document &colormap)
+{
+    rapidjson::Value number(m_colorNum);
+    rapidjson::Value invalidColor(rapidjson::kObjectType);
+
 }

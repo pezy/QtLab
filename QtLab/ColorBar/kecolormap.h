@@ -3,6 +3,9 @@
 
 #include <qstringlist.h>
 #include <qcolor.h>
+#include <qmap.h>
+#include <qjsonobject.h>
+#include "rapidjson\document.h"
 
 /*!
 * @class	CKEColormap provided in the file "kecolormap.h"
@@ -15,8 +18,9 @@
 class CKEColormap
 {
 public:
-	static bool InitializeColormapsFromFile();
-    static bool InitializeColormapsFromDB();
+	//static bool InitializeColormapsFromFile();
+    //static bool InitializeColormapsFromDB();
+    static bool InitializeColormapsFromJason();
     
 	static QStringList GetAllColormapsName();
     
@@ -24,31 +28,38 @@ public:
 	static CKEColormap* GetColormap(unsigned int iIDX);
 
 public:
-	QColor GetColorAt(unsigned char iIDX);
-    void SetColorAt(unsigned char iIDX, const QColor& color);
+    // copy
+    CKEColormap(const CKEColormap& colormap);
+    CKEColormap& operator=(const CKEColormap& colormap);
+
+	QColor GetColorAt(int index) const;
     QString GetName() const;
-    const QList<int>& GetTurningPointIndex();
-    void ResetTurningPoint();
+    QList<int> GetControlPointsIndex() const;
+    int GetColorNum() const;
+
+    bool SaveAs();
+
+    void SetControlPointRgb(uchar index, const QRgb& rgb);
+    void Flip();
 
 private:
-    //! @obsolete 2015-01-26. use db to save colormap.
-	CKEColormap(const QString& sFile);
-    //! @constructor
-    CKEColormap(const QString& sName, const QColor (&arrColor)[256]);
-    CKEColormap(const QString& sName, const QRgb(&arrRgbs)[256]);
+	//CKEColormap(const QString& sFile);
+    CKEColormap(const QString& sName, const QMap<int, QRgb>& mapRgb, const QMap<int, uchar>& mapAlpha, int colNum = 256, QColor invalidCol = QColor(Qt::white));
 
-    float _CalcColorDiff(int index1, int index2);
-    void _CalcTurningPoint();
+    void _UpdateColormap();
+    void _WriteToJson(QJsonObject &colormap);
+    void _WriteToJson(rapidjson::Document &colormap);
 
-	QString		m_strName;
-	unsigned char	m_iRed[256];
-	unsigned char	m_iGreen[256];
-	unsigned char	m_iBlue[256];
-	unsigned char   m_iAlpha[256];
+    QString m_strName;
+    int m_colorNum;
+    QColor m_invalidColor;
 
-    QList<int> m_listTurningPoint;
+    QMap<int, QRgb> m_mapControlPointsRgb;
+    QMap<int, uchar> m_mapControlPointsAlpah;
 
-	static QList<CKEColormap>	m_stdListColormap;
+    QColor m_listColor[256];
+
+	static QList<CKEColormap> m_stdListColormap;
 };
 
 #endif // CKECOLORMAP_H

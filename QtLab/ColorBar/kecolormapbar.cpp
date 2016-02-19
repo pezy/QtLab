@@ -27,7 +27,7 @@ void CKEColormapBar::slotReset()
     CKEColormap *pColormap = CKEColormap::GetColormap("rainbow");
     for (int i = 0; i != 256; ++i)
     {
-        m_pColormap->SetColorAt(i, pColormap->GetColorAt(i));
+        m_pColormap->SetControlPointRgb(i, pColormap->GetColorAt(i).rgb());
     }
 
     _ResetControlPointsList();
@@ -41,8 +41,8 @@ void CKEColormapBar::slotFlip()
     while (first != last && first != --last)
     {
         QColor temp = m_pColormap->GetColorAt(first);
-        m_pColormap->SetColorAt(first, m_pColormap->GetColorAt(last));
-        m_pColormap->SetColorAt(last, temp);
+        m_pColormap->SetControlPointRgb(first, m_pColormap->GetColorAt(last).rgb());
+        m_pColormap->SetControlPointRgb(last, temp.rgb());
         ++first;
     }
 
@@ -156,7 +156,7 @@ void CKEColormapBar::mouseDoubleClickEvent(QMouseEvent* event)
             QColor color = QColorDialog::getColor(m_pColormap->GetColorAt(index), this, "Select Color", QColorDialog::DontUseNativeDialog);
             if (color.isValid())
             {
-                m_pColormap->SetColorAt(index, color);
+                m_pColormap->SetControlPointRgb(index, color.rgb());
                 update();
             }
             break;
@@ -166,7 +166,7 @@ void CKEColormapBar::mouseDoubleClickEvent(QMouseEvent* event)
 
 void CKEColormapBar::_InitData()
 {
-    CKEColormap::InitializeColormapsFromDB();
+    CKEColormap::InitializeColormapsFromJason();
     m_pColormap = new CKEColormap(*CKEColormap::GetColormap("rainbow"));
 }
 
@@ -244,7 +244,7 @@ void CKEColormapBar::_SetSingleColor(const QPointF& position)
     QColor color = QColorDialog::getColor(m_pColormap->GetColorAt(index), this, "Select Color", QColorDialog::DontUseNativeDialog);
     if (color.isValid())
     {
-        m_pColormap->SetColorAt(index, color);
+        m_pColormap->SetControlPointRgb(index, color.rgb());
         update();
     }
 }
@@ -311,7 +311,7 @@ void CKEColormapBar::_SetMiddlePoint(const QPointF& position)
 
     QColor middleColor = _CalcMiddleColor(m_interpolationRange.first, m_interpolationRange.second);
 
-    m_pColormap->SetColorAt(m_interpolationMiddlePoint, middleColor);
+    m_pColormap->SetControlPointRgb(m_interpolationMiddlePoint, middleColor.rgb());
     _CalcLinearInterpolation(m_interpolationRange.first, m_interpolationMiddlePoint);
     _CalcLinearInterpolation(m_interpolationMiddlePoint, m_interpolationRange.second);
 }
@@ -334,7 +334,7 @@ void CKEColormapBar::_CalcLinearInterpolation(int beg, int end)
         colorI.setGreen(colorBeg.green() + qRound((colorEnd.green() - colorBeg.green()) * proportion));
         colorI.setBlue(colorBeg.blue() + qRound((colorEnd.blue() - colorBeg.blue()) * proportion));
 
-        m_pColormap->SetColorAt(i, colorI);
+        m_pColormap->SetControlPointRgb(i, colorI.rgb());
     }
 }
 
@@ -399,7 +399,7 @@ void CKEColormapBar::_CalcCompressionToRight(int oldIndex, int newIndex)
 
     for (auto iter = m_mapCompressed.begin(); iter != m_mapCompressed.end(); ++iter)
     {
-        m_pColormap->SetColorAt(newIndex + iter.key(), iter.value());
+        m_pColormap->SetControlPointRgb(newIndex + iter.key(), iter.value().rgb());
     }
 
     // stretching
@@ -407,7 +407,7 @@ void CKEColormapBar::_CalcCompressionToRight(int oldIndex, int newIndex)
     {
         for (int i = 0; i <= newIndex; ++i)
         {
-            m_pColormap->SetColorAt(i, m_pColormap->GetColorAt(0));
+            m_pColormap->SetControlPointRgb(i, m_pColormap->GetColorAt(0).rgb());
         }
         return;
     }
@@ -439,13 +439,13 @@ void CKEColormapBar::_CalcCompressionToRight(int oldIndex, int newIndex)
             colorI.setGreen(colorBeg.green() + qRound((colorEnd.green() - colorBeg.green()) * proportion));
             colorI.setBlue(colorBeg.blue() + qRound((colorEnd.blue() - colorBeg.blue()) * proportion));
 
-            m_pColormap->SetColorAt(i, colorI);
+            m_pColormap->SetControlPointRgb(i, colorI.rgb());
         }
     }
 
     for (auto iter = mapFixedIndexColor.constBegin(); iter != mapFixedIndexColor.constEnd(); ++iter)
     {
-        m_pColormap->SetColorAt(iter.key(), iter.value());
+        m_pColormap->SetControlPointRgb(iter.key(), iter.value().rgb());
     }
 }
 
@@ -485,7 +485,7 @@ void CKEColormapBar::_CalcCompressionToLeft(int oldIndex, int newIndex)
 
     for (auto iter = m_mapCompressed.begin(); iter != m_mapCompressed.end(); ++iter)
     {
-        m_pColormap->SetColorAt(leftBoundingIndex + iter.key(), iter.value());
+        m_pColormap->SetControlPointRgb(leftBoundingIndex + iter.key(), iter.value().rgb());
     }
 
     // stretching
@@ -496,7 +496,7 @@ void CKEColormapBar::_CalcCompressionToLeft(int oldIndex, int newIndex)
     {
         for (int i = newIndex; i <= 255; ++i)
         {
-            m_pColormap->SetColorAt(i, m_pColormap->GetColorAt(255));
+            m_pColormap->SetControlPointRgb(i, m_pColormap->GetColorAt(255).rgb());
         }
         return;
     }
@@ -525,13 +525,13 @@ void CKEColormapBar::_CalcCompressionToLeft(int oldIndex, int newIndex)
             colorI.setGreen(colorBeg.green() + qRound((colorEnd.green() - colorBeg.green()) * proportion));
             colorI.setBlue(colorBeg.blue() + qRound((colorEnd.blue() - colorBeg.blue()) * proportion));
 
-            m_pColormap->SetColorAt(i, colorI);
+            m_pColormap->SetControlPointRgb(i, colorI.rgb());
         }
     }
 
     for (auto iter = mapFixedIndexColor.constBegin(); iter != mapFixedIndexColor.constEnd(); ++iter)
     {
-        m_pColormap->SetColorAt(iter.key(), iter.value());
+        m_pColormap->SetControlPointRgb(iter.key(), iter.value().rgb());
     }
 }
 

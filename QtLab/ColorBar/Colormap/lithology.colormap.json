@@ -1,0 +1,139 @@
+{
+    "alpha_control_points": [
+    ],
+    "invalid_point": {
+        "alpha": 255,
+        "blue": 255,
+        "green": 255,
+        "red": 255
+    },
+    "number": 21,
+    "rgb_control_points": [
+        {
+            "blue": 3,
+            "green": 3,
+            "position": 0,
+            "red": 255
+        },
+        {
+            "blue": 54,
+            "green": 255,
+            "position": 1,
+            "red": 0
+        },
+        {
+            "blue": 255,
+            "green": 28,
+            "position": 2,
+            "red": 0
+        },
+        {
+            "blue": 0,
+            "green": 97,
+            "position": 3,
+            "red": 255
+        },
+        {
+            "blue": 255,
+            "green": 237,
+            "position": 4,
+            "red": 0
+        },
+        {
+            "blue": 255,
+            "green": 0,
+            "position": 5,
+            "red": 237
+        },
+        {
+            "blue": 166,
+            "green": 166,
+            "position": 6,
+            "red": 166
+        },
+        {
+            "blue": 0,
+            "green": 229,
+            "position": 7,
+            "red": 255
+        },
+        {
+            "blue": 40,
+            "green": 115,
+            "position": 8,
+            "red": 30
+        },
+        {
+            "blue": 255,
+            "green": 164,
+            "position": 9,
+            "red": 130
+        },
+        {
+            "blue": 170,
+            "green": 109,
+            "position": 10,
+            "red": 255
+        },
+        {
+            "blue": 64,
+            "green": 161,
+            "position": 11,
+            "red": 154
+        },
+        {
+            "blue": 148,
+            "green": 109,
+            "position": 12,
+            "red": 52
+        },
+        {
+            "blue": 28,
+            "green": 26,
+            "position": 13,
+            "red": 163
+        },
+        {
+            "blue": 95,
+            "green": 55,
+            "position": 14,
+            "red": 105
+        },
+        {
+            "blue": 156,
+            "green": 207,
+            "position": 15,
+            "red": 187
+        },
+        {
+            "blue": 166,
+            "green": 121,
+            "position": 16,
+            "red": 114
+        },
+        {
+            "blue": 33,
+            "green": 170,
+            "position": 17,
+            "red": 220
+        },
+        {
+            "blue": 106,
+            "green": 141,
+            "position": 18,
+            "red": 80
+        },
+        {
+            "blue": 103,
+            "green": 103,
+            "position": 19,
+            "red": 103
+        },
+        {
+            "blue": 255,
+            "green": 255,
+            "position": 20,
+            "red": 255
+        }
+    ]
+}
