@@ -13,10 +13,76 @@
 
 QList<CKEColormap> CKEColormap::m_stdListColormap;
 
-bool CKEColormap::InitializeColormapsFromJason()
+bool CKEColormap::InitializeColormapsFromFile()
 {
-    const QString& jasonColorScalesDir = "C:\\Program Files\\JasonSW\\Jason 8.4\\etc\\colorscales";
+    QString colormapDir = QDir::currentPath() + QDir::separator() + "Colormap" + QDir::separator();
+    QDir qDir(colormapDir);
+    if (!qDir.exists())
+    {
+        CKELog::AddLog("Can not find the colormap directory at " + colormapDir + "!");
+        return false;
+    }
 
+    QStringList sListFilter;
+    sListFilter << "*.colormap.json";
+    QStringList sListFiles = qDir.entryList(sListFilter, QDir::Files);
+
+    if (sListFiles.isEmpty())
+    {
+        CKELog::AddLog("No colormap files found at " + colormapDir + "!");
+        return false;
+    }
+
+    for (const auto& fileName : sListFiles)
+    {
+        QString fileDir = colormapDir + QDir::separator() + fileName;
+
+        QFileInfo fileInfo(fileDir);
+
+        // open file
+        QFile file(fileDir);
+        if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            Q_ASSERT(false);
+        }
+
+        QTextStream stream(&file);
+        stream.skipWhiteSpace();
+        
+        CKEColormap colormap(fileInfo.baseName(), stream.readAll());
+        m_stdListColormap << colormap;
+    }
+
+    return true;
+}
+
+bool CKEColormap::InitializeColormapsFromDB()
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(CKEDBIO::GetDefaultDBFileName());
+
+    if (!db.open())
+    {
+        CKELog::AddLog("Open DB error: " + CKEDBIO::GetDefaultDBFileName());
+        qDebug() << db.lastError();
+        return false;
+    }
+
+    QSqlQueryModel model;
+    model.setQuery("Select * from Colormap");
+    for (int i = 0; i < model.rowCount(); ++i)
+    {
+        QString colormapName = model.record(i).value("ID").toString();
+        QString colormapContent = model.record(i).value("ColormapData").toString();
+        CKEColormap colormap(colormapName, colormapContent);
+        m_stdListColormap << colormap;
+    }
+
+    return true;
+}
+
+bool CKEColormap::InitializeColormapsFromJason(const QString& jasonColorScalesDir)
+{
     QDir qDir(jasonColorScalesDir);
     if (!qDir.exists())
     {
@@ -125,6 +191,46 @@ bool CKEColormap::InitializeColormapsFromJason()
     return true;
 }
 
+bool CKEColormap::WriteColormapsToDB()
+{
+    CKEDBIO db;
+    if (!db.ConnectDB(CKEDBIO::GetDefaultDBFileName()))
+        return false;
+
+    QStringList listName = CKEColormap::GetAllColormapsName();
+    QStringList listField{ "ID", "ColormapData" };
+
+    db.Transaction();
+    for (int i = 0; i < listName.size(); ++i)
+    {
+        QList<QVariant> vtList;
+
+        CKEColormap *pColormap = CKEColormap::GetColormap(listName.at(i));
+        rapidjson::Document colormapDoc;
+        pColormap->_WriteToJson(colormapDoc);
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        colormapDoc.Accept(writer);
+
+        vtList.append(listName.at(i));
+        vtList.append(buffer.GetString());
+
+        db.Insert("Colormap", listField, vtList);
+    }
+    db.Commit();
+
+    return true;
+}
+
+bool CKEColormap::WriteColormapsToFile()
+{
+    for (const QString& fileName : CKEColormap::GetAllColormapsName())
+    {
+        CKEColormap *pColormap = CKEColormap::GetColormap(fileName);
+        pColormap->SaveAs(QDir::currentPath() + QDir::separator() + "Colormap");
+    }
+}
+
 QStringList CKEColormap::GetAllColormapsName()
 {
 	QStringList strListName;
@@ -178,9 +284,9 @@ int CKEColormap::GetColorNum() const
     return m_colorNum;
 }
 
-bool CKEColormap::SaveAs()
+bool CKEColormap::SaveAs(const QString& strDir)
 {
-    QString strFilePath = QDir::currentPath() + QDir::separator() + "Colormap" + QDir::separator() + m_strName + ".colormap.json";
+    QString strFilePath = strDir + QDir::separator() + m_strName + ".colormap.json";
 
     QFile saveFile(strFilePath);
     if (!saveFile.open(QIODevice::WriteOnly))
@@ -242,6 +348,37 @@ CKEColormap::CKEColormap(const QString& sName, const QMap<int, QRgb>& mapRgb, co
     m_mapControlPointsAlpah = mapAlpha;
     m_colorNum = colNum;
     m_invalidColor = invalidCol;
+
+    _UpdateColormap();
+}
+
+CKEColormap::CKEColormap(const QString& fileName, const QString& jsonText)
+    : m_strName(fileName)
+{
+    rapidjson::Document jsonDoc;
+    jsonDoc.Parse(jsonText.toUtf8().constData());
+
+    if (!jsonDoc.HasMember("number") || !jsonDoc.HasMember("invalid_point") || !jsonDoc.HasMember("rgb_control_points") || !jsonDoc.HasMember("alpha_control_points"))
+        return;
+
+    m_colorNum = jsonDoc["number"].GetInt();
+
+    m_invalidColor.setRed(jsonDoc["invalid_point"]["red"].GetInt());
+    m_invalidColor.setGreen(jsonDoc["invalid_point"]["green"].GetInt());
+    m_invalidColor.setBlue(jsonDoc["invalid_point"]["blue"].GetInt());
+    m_invalidColor.setAlpha(jsonDoc["invalid_point"]["alpha"].GetInt());
+
+    const rapidjson::Value& rgbPoints = jsonDoc["rgb_control_points"];
+    for (rapidjson::SizeType i = 0; i != rgbPoints.Size(); ++i)
+    {
+        m_mapControlPointsRgb.insert(rgbPoints[i]["position"].GetInt(), qRgb(rgbPoints[i]["red"].GetInt(), rgbPoints[i]["green"].GetInt(), rgbPoints[i]["blue"].GetInt()));
+    }
+
+    const rapidjson::Value& alphaPoints = jsonDoc["alpha_control_points"];
+    for (rapidjson::SizeType i = 0; i != alphaPoints.Size(); ++i)
+    {
+        m_mapControlPointsAlpah.insert(alphaPoints[i]["position"].GetInt(), alphaPoints[i]["alpha"].GetInt());
+    }
 
     _UpdateColormap();
 }
@@ -318,54 +455,6 @@ void CKEColormap::_UpdateColormap()
     {
         m_listColor[iter.key()].setAlpha(iter.value());
     }
-}
-
-void CKEColormap::_WriteToJson(QJsonObject &colormap)
-{
-    colormap["number"] = m_colorNum;
-
-    QJsonObject invalidColor
-    {
-        { "red", m_invalidColor.red() },
-        { "green", m_invalidColor.green() },
-        { "blue", m_invalidColor.blue() },
-        { "alpha", m_invalidColor.alpha() }
-    };
-
-    colormap["invalid_point"] = invalidColor;
-
-    QJsonArray arrayRgb;
-
-    for (auto iter = m_mapControlPointsRgb.cbegin(); iter != m_mapControlPointsRgb.cend(); ++iter)
-    {
-        QJsonObject rgbControlPoint
-        {
-            { "position", iter.key() },
-            { "red", qRed(iter.value()) },
-            { "green", qGreen(iter.value()) },
-            { "blue", qBlue(iter.value()) }
-
-        };
-
-        arrayRgb << rgbControlPoint;
-    }
-
-    colormap["rgb_control_points"] = arrayRgb;
-
-    QJsonArray arrayAlpha;
-
-    for (auto iter = m_mapControlPointsAlpah.cbegin(); iter != m_mapControlPointsAlpah.cend(); ++iter)
-    {
-        QJsonObject alphaControlPoint
-        {
-            { "position", iter.key() },
-            { "alpha", iter.value() }
-        };
-
-        arrayAlpha << alphaControlPoint;
-    }
-
-    colormap["alpha_control_points"] = arrayAlpha;
 }
 
 void CKEColormap::_WriteToJson(rapidjson::Document &colormap)

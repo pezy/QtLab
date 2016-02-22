@@ -27,7 +27,6 @@ public slots:
     void slotReset();
     void slotFlip();
     void slotTemplateChanged(const QString& templateName);
-    void slotSaveAll();
 
 protected:
     void paintEvent(QPaintEvent* event) override;

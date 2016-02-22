@@ -4,7 +4,6 @@
 #include <qstringlist.h>
 #include <qcolor.h>
 #include <qmap.h>
-#include <qjsonobject.h>
 #include "rapidjson\document.h"
 
 /*!
@@ -18,9 +17,12 @@
 class CKEColormap
 {
 public:
-	//static bool InitializeColormapsFromFile();
-    //static bool InitializeColormapsFromDB();
-    static bool InitializeColormapsFromJason();
+	static bool InitializeColormapsFromFile();
+    static bool InitializeColormapsFromDB();
+    static bool InitializeColormapsFromJason(const QString& jasonColorScalesDir);
+
+    static bool WriteColormapsToDB();
+    static bool WriteColormapsToFile();
     
 	static QStringList GetAllColormapsName();
     
@@ -37,17 +39,16 @@ public:
     QList<int> GetControlPointsIndex() const;
     int GetColorNum() const;
 
-    bool SaveAs();
+    bool SaveAs(const QString& strDir);
 
     void SetControlPointRgb(uchar index, const QRgb& rgb);
     void Flip();
 
 private:
-	//CKEColormap(const QString& sFile);
-    CKEColormap(const QString& sName, const QMap<int, QRgb>& mapRgb, const QMap<int, uchar>& mapAlpha, int colNum = 256, QColor invalidCol = QColor(Qt::white));
+	CKEColormap(const QString& sName, const QMap<int, QRgb>& mapRgb, const QMap<int, uchar>& mapAlpha, int colNum = 256, QColor invalidCol = QColor(Qt::white));
+    CKEColormap(const QString& fileName, const QString& jsonText);
 
     void _UpdateColormap();
-    void _WriteToJson(QJsonObject &colormap);
     void _WriteToJson(rapidjson::Document &colormap);
 
     QString m_strName;

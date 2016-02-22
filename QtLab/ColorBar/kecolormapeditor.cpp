@@ -61,15 +61,6 @@ void CKEColormapEditor::slotTemplateChanged(const QString& templateName)
     update();
 }
 
-void CKEColormapEditor::slotSaveAll()
-{
-    for (const QString& strName : CKEColormap::GetAllColormapsName())
-    {
-        CKEColormap *pColormap = CKEColormap::GetColormap(strName);
-        pColormap->SaveAs();
-    }
-}
-
 void CKEColormapEditor::paintEvent(QPaintEvent* event)
 {
     if (!m_pColormap)

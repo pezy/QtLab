@@ -166,7 +166,7 @@ void CKEColormapBar::mouseDoubleClickEvent(QMouseEvent* event)
 
 void CKEColormapBar::_InitData()
 {
-    CKEColormap::InitializeColormapsFromJason();
+    CKEColormap::InitializeColormapsFromFile();
     m_pColormap = new CKEColormap(*CKEColormap::GetColormap("rainbow"));
 }
 
