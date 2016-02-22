@@ -229,6 +229,8 @@ bool CKEColormap::WriteColormapsToFile()
         CKEColormap *pColormap = CKEColormap::GetColormap(fileName);
         pColormap->SaveAs(QDir::currentPath() + QDir::separator() + "Colormap");
     }
+
+    return true;
 }
 
 QStringList CKEColormap::GetAllColormapsName()
