@@ -41,7 +41,8 @@ public:
 
     bool SaveAs(const QString& strDir);
 
-    void SetControlPointRgb(uchar index, const QRgb& rgb);
+    void SetControlPointRgb(int index, const QRgb& rgb);
+    void DeleteControlPoint(int index);
     void Flip();
 
 private:

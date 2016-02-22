@@ -308,9 +308,16 @@ bool CKEColormap::SaveAs(const QString& strDir)
     return true;
 }
 
-void CKEColormap::SetControlPointRgb(uchar index, const QRgb& rgb)
+void CKEColormap::SetControlPointRgb(int index, const QRgb& rgb)
 {
-    m_mapControlPointsRgb.insert(index, rgb);
+    m_mapControlPointsRgb[index] = rgb;
+
+    _UpdateColormap();
+}
+
+void CKEColormap::DeleteControlPoint(int index)
+{
+    m_mapControlPointsRgb.remove(index);
 
     _UpdateColormap();
 }
