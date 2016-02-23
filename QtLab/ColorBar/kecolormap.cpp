@@ -271,6 +271,13 @@ QColor CKEColormap::GetColorAt(int index) const
     return m_listColor[index];
 }
 
+QRgb CKEColormap::GetRgbAt(int index) const
+{
+    Q_ASSERT(0 <= index && index < m_colorNum);
+
+    return m_listColor[index].rgb();
+}
+
 QString CKEColormap::GetName() const
 {
     return m_strName;
@@ -320,6 +327,35 @@ void CKEColormap::DeleteControlPoint(int index)
     m_mapControlPointsRgb.remove(index);
 
     _UpdateColormap();
+}
+
+void CKEColormap::UpdateControlPoint(int oldIndex, int newIndex, const QRgb& newRgb)
+{
+    if (newIndex == oldIndex)
+        return;
+
+    m_mapControlPointsRgb.insert(newIndex, newRgb);
+    m_mapControlPointsRgb.remove(oldIndex);
+
+    _UpdateColormap();
+}
+
+void CKEColormap::UpdateGeologicMask(const QMap<int, QRgb>& mapMask)
+{
+    _UpdateColormap();
+
+    int offset = m_colorNum / 100;
+
+    for (auto iter = mapMask.cbegin(); iter != mapMask.cend(); ++iter)
+    {
+        int maskBeg = qMax(0, iter.key() - offset);
+        int maskEnd = qMin(m_colorNum - 1, iter.key() + offset);
+
+        for (int i = maskBeg; i <= maskEnd; ++i)
+        {
+            m_listColor[i] = iter.value();
+        }
+    }
 }
 
 void CKEColormap::Flip()

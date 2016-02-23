@@ -17,6 +17,7 @@ CKEColormapEditor::CKEColormapEditor(QWidget *parent)
 
 CKEColormapEditor::~CKEColormapEditor()
 {
+    m_mapGeologicMask.clear();
     if (m_pColormap)
     {
         delete m_pColormap;
@@ -30,6 +31,7 @@ void CKEColormapEditor::slotReset()
         return;
 
     *m_pColormap = *m_pTemplateColormap;
+    m_mapGeologicMask.clear();
 
     update();
 }
@@ -60,29 +62,40 @@ void CKEColormapEditor::slotTemplateChanged(const QString& templateName)
         *m_pColormap = *m_pTemplateColormap;
     }
 
+    m_mapGeologicMask.clear();
+
     update();
 }
 
 void CKEColormapEditor::slotAddControlPoint()
 {
-    if (m_currentControlPointIndex == -1 && m_clickedColorIndex != -1)
-    {
-        m_pColormap->SetControlPointRgb(m_clickedColorIndex, m_pColormap->GetColorAt(m_clickedColorIndex).rgb());
-    }
+    
+    
+    m_pColormap->SetControlPointRgb(m_selectedColorIndex, m_pColormap->GetColorAt(m_selectedColorIndex).rgb());
 
     update();
 }
 
 void CKEColormapEditor::slotAddGeologicMask()
 {
+    Q_ASSERT(m_selectedColorIndex != -1);
 
+    m_mapGeologicMask.insert(m_selectedColorIndex, qRgb(255, 0, 255));
+    m_pColormap->UpdateGeologicMask(m_mapGeologicMask);
+
+    update();
 }
 
 void CKEColormapEditor::slotDeleteControlPointOrMask()
 {
-    if (m_currentControlPointIndex != -1)
+    if (m_mapGeologicMask.contains(m_selectedColorIndex))
     {
-        m_pColormap->DeleteControlPoint(m_currentControlPointIndex);
+        m_mapGeologicMask.remove(m_selectedColorIndex);
+        m_pColormap->UpdateGeologicMask(m_mapGeologicMask);
+    }
+    else
+    {
+        m_pColormap->DeleteControlPoint(m_selectedColorIndex);
     }
 
     update();
@@ -119,6 +132,8 @@ void CKEColormapEditor::paintEvent(QPaintEvent* event)
         _DrawControlPoint(i);
     }
 
+    _DrawGeologicMask();
+
     painter.restore();
 }
 
@@ -130,16 +145,30 @@ void CKEColormapEditor::resizeEvent(QResizeEvent* event)
 
 void CKEColormapEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    if (m_bControlIndexChanged)
+    {
+        int newIndex = _PosToColorIndex(event->pos());
+        if (m_listFixedControlPoints.contains(newIndex))
+            return;
+
+        m_pColormap->UpdateControlPoint(m_selectedColorIndex, newIndex, m_selectedControlPointRgb);
+        m_selectedColorIndex = newIndex;
+
+        update();
+        return;
+    }
+
     if (m_colorBarRect.contains(event->pos()))
     {
         _ShowColorInfo(event->pos());
     }
     else if (m_controlRect.contains(event->pos()))
     {
-        if (_IsInControlPoint(event->pos()))
+        int possibleControlIndex;
+        if (_IsInControlPoint(event->pos(), possibleControlIndex))
         {
-            const QColor& color = m_pColormap->GetColorAt(m_currentControlPointIndex);
-            emit ShowMsg("Control point: " + QString::number(m_currentControlPointIndex) + QString("\tColor: %1,%2,%3,%4").arg(color.red()).arg(color.green()).arg(color.blue()).arg(color.alpha()));
+            const QColor& color = m_pColormap->GetColorAt(possibleControlIndex);
+            emit ShowMsg("Control point: " + QString::number(possibleControlIndex) + QString("\tColor: %1,%2,%3,%4").arg(color.red()).arg(color.green()).arg(color.blue()).arg(color.alpha()));
         }
     }
     else
@@ -150,14 +179,13 @@ void CKEColormapEditor::mouseMoveEvent(QMouseEvent* event)
 
 void CKEColormapEditor::mousePressEvent(QMouseEvent* event)
 {
-    m_clickedColorIndex = _PosToColorIndex(event->pos());
-
-    if (m_controlRect.contains(event->pos()) && event->button() == Qt::RightButton)
+    if (event->button() == Qt::RightButton)
     {
-        QMenu menu(this);
-        _IsInControlPoint(event->pos());
-        _UpdateMenuState(menu);
-        menu.exec(event->globalPos());
+        _ShowMenu(event->pos(), event->globalPos());
+    }
+    else if (event->button() == Qt::LeftButton)
+    {
+        _SelectControlPoint(event->pos());
     }
 }
 
@@ -165,8 +193,16 @@ void CKEColormapEditor::mouseDoubleClickEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        _SetSingleColor(event->pos());
+        _SetControlPointColor(event->pos());
     }
+}
+
+void CKEColormapEditor::mouseReleaseEvent(QMouseEvent* event)
+{
+    m_selectedColorIndex = -1;
+    m_bControlIndexChanged = false;
+    m_selectedControlPointRgb = 0u;
+    m_listFixedControlPoints.clear();
 }
 
 QPointF CKEColormapEditor::_ColorIndexToControlPos(int index)
@@ -206,57 +242,89 @@ void CKEColormapEditor::_DrawControlPoint(int index)
     painter.drawPolygon(polygon);
 }
 
-void CKEColormapEditor::_UpdateMenuState(QMenu& menu)
+void CKEColormapEditor::_DrawGeologicMask()
+{
+    QPainter painter(this);
+    painter.setPen(Qt::black);
+
+    for (auto iter = m_mapGeologicMask.cbegin(); iter != m_mapGeologicMask.cend(); ++iter)
+    {
+        painter.save();
+        painter.setBrush(QColor(iter.value()));
+
+        QPointF pos = _ColorIndexToControlPos(iter.key());
+        if (pos.isNull())
+            return;
+
+        painter.drawRect(QRectF(pos.x() - 5, pos.y(), 10, 10));
+        painter.restore();
+    }
+}
+
+void CKEColormapEditor::_UpdateMenuStateByPosition(QMenu& menu, const QPoint& pos)
 {
     QAction *pAddControlPointAction = menu.addAction("Add control point", this, SLOT(slotAddControlPoint()));
     QAction *pAddGeologicMaskAction = menu.addAction("Add geologic mask", this, SLOT(slotAddGeologicMask()));
     QAction *pDeleteAction = menu.addAction("Delete control point or mask", this, SLOT(slotDeleteControlPointOrMask()));
 
-    if (m_currentControlPointIndex == -1)
-    {
-        pAddControlPointAction->setDisabled(false);
-        pDeleteAction->setDisabled(true);
-    }
-    else
+    m_selectedColorIndex = _PosToColorIndex(pos);
+
+    if (_IsInControlPoint(pos, m_selectedColorIndex) || m_mapGeologicMask.contains(m_selectedColorIndex))
     {
         pAddControlPointAction->setDisabled(true);
         pDeleteAction->setDisabled(false);
     }
+    else
+    {
+        pAddControlPointAction->setDisabled(false);
+        pDeleteAction->setDisabled(true);
+    }
 }
 
-bool CKEColormapEditor::_IsInControlPoint(const QPoint& pos)
+bool CKEColormapEditor::_IsInControlPoint(const QPoint& pos, int& controlIndex)
 {
-    m_currentControlPointIndex = -1;
-
     int indexBeg = _PosToColorIndex(pos + QPointF(-5, 0));
     int indexEnd = _PosToColorIndex(pos + QPointF(5, 0));
 
     if (indexBeg == -1 || indexEnd == -1)
         return false;
 
-    for (auto index : m_pColormap->GetControlPointsIndex())
+    const std::list<int>& controlPointIndices = m_pColormap->GetControlPointsIndex().toStdList();
+    for (auto iter = controlPointIndices.rbegin(); iter != controlPointIndices.rend(); ++iter)
     {
-        if (indexBeg <= index && index <= indexEnd)
+        if (indexBeg <= *iter && *iter <= indexEnd)
         {
-            m_currentControlPointIndex = index;
+            controlIndex = *iter;
+            return true;
         }
     }
 
-    return m_currentControlPointIndex != -1;
+    return false;
 }
 
-void CKEColormapEditor::_SetSingleColor(const QPoint& position)
+void CKEColormapEditor::_ShowMenu(const QPoint& position, const QPoint& cursorPos)
 {
     if (!m_controlRect.contains(position))
         return;
 
-    if (!_IsInControlPoint(position))
+    QMenu menu(this);
+    _UpdateMenuStateByPosition(menu, position);
+    menu.exec(cursorPos);
+}
+
+void CKEColormapEditor::_SetControlPointColor(const QPoint& position)
+{
+    if (!m_controlRect.contains(position))
         return;
 
-    QColor color = QColorDialog::getColor(m_pColormap->GetColorAt(m_currentControlPointIndex), this, "Select Color", QColorDialog::DontUseNativeDialog);
+    int possibleControlIndex;
+    if (!_IsInControlPoint(position, possibleControlIndex))
+        return;
+
+    QColor color = QColorDialog::getColor(m_pColormap->GetColorAt(possibleControlIndex), this, "Select Color", QColorDialog::DontUseNativeDialog);
     if (color.isValid())
     {
-        m_pColormap->SetControlPointRgb(m_currentControlPointIndex, color.rgb());
+        m_pColormap->SetControlPointRgb(possibleControlIndex, color.rgb());
         update();
     }
 }
@@ -269,4 +337,18 @@ void CKEColormapEditor::_ShowColorInfo(const QPointF& position)
 
     const QColor& color = m_pColormap->GetColorAt(currIndex);
     emit ShowMsg("Index: " + QString::number(currIndex) + QString("\tColor: %1,%2,%3,%4").arg(color.red()).arg(color.green()).arg(color.blue()).arg(color.alpha()));
+}
+
+void CKEColormapEditor::_SelectControlPoint(const QPoint& pos)
+{
+    if (!m_controlRect.contains(pos))
+        return;
+
+    if (_IsInControlPoint(pos, m_selectedColorIndex))
+    {
+        m_bControlIndexChanged = true;
+        m_selectedControlPointRgb = m_pColormap->GetRgbAt(m_selectedColorIndex);
+        m_listFixedControlPoints = m_pColormap->GetControlPointsIndex();
+        m_listFixedControlPoints.removeOne(m_selectedColorIndex);
+    }
 }

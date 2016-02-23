@@ -38,17 +38,21 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
     QPointF _ColorIndexToControlPos(int index);
     int _PosToColorIndex(const QPointF& pos);
 
     void _DrawControlPoint(int index);
-    void _UpdateMenuState(QMenu& menu);
-    bool _IsInControlPoint(const QPoint& pos);
+    void _DrawGeologicMask();
+    void _UpdateMenuStateByPosition(QMenu& menu, const QPoint& pos);
+    bool _IsInControlPoint(const QPoint& pos, int& controlIndex);
 
-    void _SetSingleColor(const QPoint& position);
+    void _ShowMenu(const QPoint& position, const QPoint& cursorPos);
+    void _SetControlPointColor(const QPoint& position);
     void _ShowColorInfo(const QPointF& position);
+    void _SelectControlPoint(const QPoint& pos);
 
 private:
     const qreal m_controlRectHeight = 15.0;
@@ -61,8 +65,15 @@ private:
 
     qreal m_singleColorBarWidth = 0.0;
 
-    int m_currentControlPointIndex = -1;
-    int m_clickedColorIndex = -1;
+    int m_selectedColorIndex = -1;
+
+    // change control point position
+    bool m_bControlIndexChanged = false;
+    QRgb m_selectedControlPointRgb = 0u;
+    QList<int> m_listFixedControlPoints;
+
+    // geologic mask
+    QMap<int, QRgb> m_mapGeologicMask;
 };
 
 #endif // KECOLORMAPEDITOR_H

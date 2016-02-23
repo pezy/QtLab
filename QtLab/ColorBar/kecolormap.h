@@ -35,6 +35,7 @@ public:
     CKEColormap& operator=(const CKEColormap& colormap);
 
 	QColor GetColorAt(int index) const;
+    QRgb GetRgbAt(int index) const;
     QString GetName() const;
     QList<int> GetControlPointsIndex() const;
     int GetColorNum() const;
@@ -43,6 +44,8 @@ public:
 
     void SetControlPointRgb(int index, const QRgb& rgb);
     void DeleteControlPoint(int index);
+    void UpdateControlPoint(int oldIndex, int newIndex, const QRgb& newRgb);
+    void UpdateGeologicMask(const QMap<int, QRgb>& mapMask);
     void Flip();
 
 private:
