@@ -48,11 +48,12 @@ private:
     void _DrawGeologicMask();
     void _UpdateMenuStateByPosition(QMenu& menu, const QPoint& pos);
     bool _IsInControlPoint(const QPoint& pos, int& controlIndex);
+    bool _IsInGeologicMask(const QPoint& pos, int& maskIndex);
 
     void _ShowMenu(const QPoint& position, const QPoint& cursorPos);
     void _SetControlPointColor(const QPoint& position);
     void _ShowColorInfo(const QPointF& position);
-    void _SelectControlPoint(const QPoint& pos);
+    void _SelectControlPointOrMask(const QPoint& pos);
 
 private:
     const qreal m_controlRectHeight = 15.0;
@@ -74,6 +75,9 @@ private:
 
     // geologic mask
     QMap<int, QRgb> m_mapGeologicMask;
+    bool m_bGeologicMaskChanged = false;
+    QRgb m_selectedMaskRgb = 0u;
+    QList<int> m_listFixedMask;
 };
 
 #endif // KECOLORMAPEDITOR_H

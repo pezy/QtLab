@@ -145,6 +145,21 @@ void CKEColormapEditor::resizeEvent(QResizeEvent* event)
 
 void CKEColormapEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    if (m_bGeologicMaskChanged)
+    {
+        int newIndex = _PosToColorIndex(event->pos());
+        if (m_listFixedMask.contains(newIndex) || newIndex == m_selectedColorIndex)
+            return;
+
+        m_mapGeologicMask.insert(newIndex, m_selectedMaskRgb);
+        m_mapGeologicMask.remove(m_selectedColorIndex);
+        m_pColormap->UpdateGeologicMask(m_mapGeologicMask);
+        m_selectedColorIndex = newIndex;
+
+        update();
+        return;
+    }
+    
     if (m_bControlIndexChanged)
     {
         int newIndex = _PosToColorIndex(event->pos());
@@ -185,7 +200,7 @@ void CKEColormapEditor::mousePressEvent(QMouseEvent* event)
     }
     else if (event->button() == Qt::LeftButton)
     {
-        _SelectControlPoint(event->pos());
+        _SelectControlPointOrMask(event->pos());
     }
 }
 
@@ -203,6 +218,8 @@ void CKEColormapEditor::mouseReleaseEvent(QMouseEvent* event)
     m_bControlIndexChanged = false;
     m_selectedControlPointRgb = 0u;
     m_listFixedControlPoints.clear();
+    m_bGeologicMaskChanged = false;
+    m_listFixedMask.clear();
 }
 
 QPointF CKEColormapEditor::_ColorIndexToControlPos(int index)
@@ -302,6 +319,27 @@ bool CKEColormapEditor::_IsInControlPoint(const QPoint& pos, int& controlIndex)
     return false;
 }
 
+bool CKEColormapEditor::_IsInGeologicMask(const QPoint& pos, int& maskIndex)
+{
+    int indexBeg = _PosToColorIndex(pos + QPointF(-5, 0));
+    int indexEnd = _PosToColorIndex(pos + QPointF(5, 0));
+
+    if (indexBeg == -1 || indexEnd == -1)
+        return false;
+
+    const std::list<int>& maskIndices = m_mapGeologicMask.keys().toStdList();
+    for (auto iter = maskIndices.rbegin(); iter != maskIndices.rend(); ++iter)
+    {
+        if (indexBeg <= *iter && *iter <= indexEnd)
+        {
+            maskIndex = *iter;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void CKEColormapEditor::_ShowMenu(const QPoint& position, const QPoint& cursorPos)
 {
     if (!m_controlRect.contains(position))
@@ -339,12 +377,19 @@ void CKEColormapEditor::_ShowColorInfo(const QPointF& position)
     emit ShowMsg("Index: " + QString::number(currIndex) + QString("\tColor: %1,%2,%3,%4").arg(color.red()).arg(color.green()).arg(color.blue()).arg(color.alpha()));
 }
 
-void CKEColormapEditor::_SelectControlPoint(const QPoint& pos)
+void CKEColormapEditor::_SelectControlPointOrMask(const QPoint& pos)
 {
     if (!m_controlRect.contains(pos))
         return;
 
-    if (_IsInControlPoint(pos, m_selectedColorIndex))
+    if (_IsInGeologicMask(pos, m_selectedColorIndex))
+    {
+        m_bGeologicMaskChanged = true;
+        m_selectedMaskRgb = m_mapGeologicMask.value(m_selectedColorIndex);
+        m_listFixedMask = m_mapGeologicMask.keys();
+        m_listFixedMask.removeOne(m_selectedColorIndex);
+    }
+    else if (_IsInControlPoint(pos, m_selectedColorIndex))
     {
         m_bControlIndexChanged = true;
         m_selectedControlPointRgb = m_pColormap->GetRgbAt(m_selectedColorIndex);
