@@ -31,6 +31,10 @@ public slots:
     void slotAddControlPoint();
     void slotAddGeologicMask();
     void slotDeleteControlPointOrMask();
+	void slotAllOpaque();
+	void slotDeleteOpacityPoint();
+	void slotAddOpacityPoint();
+	void slotSetOpacityFreeDrawing(bool bChecked);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -42,18 +46,24 @@ protected:
 
 private:
     QPointF _ColorIndexToControlPos(int index);
+	QPointF _IndexAlphaToOpacityPos(int index, int alpha);
     int _PosToColorIndex(const QPointF& pos);
+	int _PosToAlpha(const QPointF& pos);
 
     void _DrawControlPoint(int index);
     void _DrawGeologicMask();
-    void _UpdateMenuStateByPosition(QMenu& menu, const QPoint& pos);
+	void _DrawOpacityPoint();
+    void _OpenControlMenu(QMenu& menu, const QPoint& pos);
+	void _OpenOpacityMenu(QMenu& menu, const QPoint& pos);
     bool _IsInControlPoint(const QPoint& pos, int& controlIndex);
     bool _IsInGeologicMask(const QPoint& pos, int& maskIndex);
+	bool _IsInOpacityPoint(const QPoint& pos, int& controlIndex, int& alpha);
 
     void _ShowMenu(const QPoint& position, const QPoint& cursorPos);
     void _SetControlPointColor(const QPoint& position);
-    void _ShowColorInfo(const QPointF& position);
+    void _ShowColorInfo(const QPoint& position);
     void _SelectControlPointOrMask(const QPoint& pos);
+	void _BeginFreeDrawing(const QPoint& pos);
 
 private:
     const qreal m_controlRectHeight = 15.0;
@@ -78,6 +88,11 @@ private:
     bool m_bGeologicMaskChanged = false;
     QRgb m_selectedMaskRgb = 0u;
     QList<int> m_listFixedMask;
+
+	// opacity
+	int m_selectedAlpha = 255;
+	bool m_bFreeDrawing = false;
+	bool m_bDrawingStart = false;
 };
 
 #endif // KECOLORMAPEDITOR_H

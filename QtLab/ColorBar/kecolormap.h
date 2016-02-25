@@ -39,6 +39,7 @@ public:
     QString GetName() const;
     QList<int> GetControlPointsIndex() const;
     int GetColorNum() const;
+	const QMap<int, uchar>& GetAlphaMap() const;
 
     bool SaveAs(const QString& strDir);
 
@@ -46,6 +47,9 @@ public:
     void DeleteControlPoint(int index);
     void UpdateControlPoint(int oldIndex, int newIndex, const QRgb& newRgb);
     void UpdateGeologicMask(const QMap<int, QRgb>& mapMask);
+	void ClearAlpha();
+	void DeleteOpacityPoint(int index);
+	void SetAlpha(int index, uchar alpha);
     void Flip();
 
 private:

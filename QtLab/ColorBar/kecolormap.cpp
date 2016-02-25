@@ -293,6 +293,11 @@ int CKEColormap::GetColorNum() const
     return m_colorNum;
 }
 
+const QMap<int, uchar>& CKEColormap::GetAlphaMap() const
+{
+	return m_mapControlPointsAlpah;
+}
+
 bool CKEColormap::SaveAs(const QString& strDir)
 {
     QString strFilePath = strDir + QDir::separator() + m_strName + ".colormap.json";
@@ -356,6 +361,30 @@ void CKEColormap::UpdateGeologicMask(const QMap<int, QRgb>& mapMask)
             m_listColor[i] = iter.value();
         }
     }
+}
+
+void CKEColormap::ClearAlpha()
+{
+	m_mapControlPointsAlpah.clear();
+
+	for (int i = 0; i != m_colorNum; ++i)
+	{
+		m_listColor[i].setAlpha(255);
+	}
+}
+
+void CKEColormap::DeleteOpacityPoint(int index)
+{
+	m_mapControlPointsAlpah.remove(index);
+
+	m_listColor[index].setAlpha(255);
+}
+
+void CKEColormap::SetAlpha(int index, uchar alpha)
+{
+	m_mapControlPointsAlpah.insert(index, alpha);
+
+	m_listColor[index].setAlpha(alpha);
 }
 
 void CKEColormap::Flip()

@@ -1,5 +1,4 @@
 #include <QtWidgets/QApplication>
-#include "kecolormapbar.h"
 #include "kecolormap.h"
 #include "kedbio.h"
 #include "kesaveload.h"
