@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="RandomColor">
+    <file>Icon/colors.png</file>
+    <file>Icon/random.png</file>
+  </qresource>
+</RCC>
