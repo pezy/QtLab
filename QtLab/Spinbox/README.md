@@ -1,1 +1,0 @@
-![show](spinbox.gif)

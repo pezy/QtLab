@@ -1,1 +1,0 @@
-![show](style.gif)
