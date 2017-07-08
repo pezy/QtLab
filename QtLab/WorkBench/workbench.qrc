@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/WorkBench">
+        <file alias="logo">Resources/qtlogo-64.png</file>
+        <file alias="backgroud">Resources/TheQtCompany_logo_1200x630.png</file>
+    </qresource>
+    <qresource prefix="/appicon">
+        <file alias="calc">Resources/calc.png</file>
+        <file alias="calc_gray">Resources/calc_gray.png</file>
+        <file alias="notepad">Resources/notepad.png</file>
+        <file alias="notepad_gray">Resources/notepad_gray.png</file>
+        <file alias="paint">Resources/paint.png</file>
+        <file alias="paint_gray">Resources/paint_gray.png</file>
+        <file alias="wordpad">Resources/wordpad.png</file>
+        <file alias="wordpad_gray">Resources/wordpad_gray.png</file>
+    </qresource>
+</RCC>
